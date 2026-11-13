@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 200 200" role="img" aria-labelledby="title">
+  <title id="title">Pageway：浏览器窗口与字母 p</title>
+  <rect width="200" height="200" fill="#fff"/>
+  <path fill="#111" fill-rule="evenodd" d="M58 24H142Q154 24 154 36V120Q154 132 142 132H66Q62 132 62 136V172Q62 176 58 176H50Q46 176 46 172V36Q46 24 58 24Z M68 52H132Q138 52 138 58V110Q138 116 132 116H68Q62 116 62 110V58Q62 52 68 52Z"/>
+  <g fill="#fff">
+    <circle cx="82" cy="38" r="3.4"/>
+    <circle cx="100" cy="38" r="3.4"/>
+    <circle cx="118" cy="38" r="3.4"/>
+  </g>
+</svg>

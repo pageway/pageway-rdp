@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Pageway 标志</title>
+  <rect width="1024" height="1024" fill="#fff"/>
+  <g transform="translate(162 60) scale(3.5)">
+    <path fill="#111" fill-rule="evenodd" d="M58 24H142Q154 24 154 36V120Q154 132 142 132H66Q62 132 62 136V172Q62 176 58 176H50Q46 176 46 172V36Q46 24 58 24Z M68 52H132Q138 52 138 58V110Q138 116 132 116H68Q62 116 62 110V58Q62 52 68 52Z"/>
+    <g fill="#fff">
+      <circle cx="82" cy="38" r="3.4"/>
+      <circle cx="100" cy="38" r="3.4"/>
+      <circle cx="118" cy="38" r="3.4"/>
+    </g>
+  </g>
+  <text x="512" y="850" text-anchor="middle" fill="#111" font-family="Century Gothic, Futura, Segoe UI, sans-serif" font-size="116" font-weight="400" letter-spacing="2">pageway</text>
+</svg>
