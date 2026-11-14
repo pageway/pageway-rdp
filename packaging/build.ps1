@@ -2,9 +2,6 @@
 param(
     [ValidateSet('x64', 'arm64')]
     [string]$Arch = 'x64',
-    [ValidateSet('machine', 'user')]
-    [string]$Mode = 'machine',
-    [switch]$AllModes,
     [switch]$FrontendOnly,
     [switch]$SkipFrontend
 )
@@ -170,22 +167,17 @@ $dist = Join-Path $Root 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
 $gatewayExe = Join-Path $Root "gateway\target\$target\release\pageway-rdp.exe"
 $makeNsis = Find-MakeNsis
-$modes = if ($AllModes) { @('machine', 'user') } else { @($Mode) }
-foreach ($installMode in $modes) {
-    $suffix = if ($installMode -eq 'user') { '-user' } else { '' }
-    $output = Join-Path $dist "Pageway-Setup-$Version-windows-$Arch$suffix.exe"
-    $arguments = @(
-        '/INPUTCHARSET', 'UTF8',
-        "/DVERSION=$Version",
-        "/DARCH=$Arch",
-        "/DMODE=$installMode",
-        "/DOUTPUT_FILE=$output",
-        "/DGATEWAY_EXE=$gatewayExe",
-        "/DWEB_DIR=$(Join-Path $Frontend 'dist')",
-        "/DROOT_DIR=$Root",
-        "/DBUILD_ASSETS=$buildAssets",
-        (Join-Path $Root 'packaging\installer.nsi')
-    )
-    Invoke-Native $makeNsis $arguments
-    Write-Host "Built $output"
-}
+$output = Join-Path $dist "Pageway-Setup-$Version-windows-$Arch.exe"
+$arguments = @(
+    '/INPUTCHARSET', 'UTF8',
+    "/DVERSION=$Version",
+    "/DARCH=$Arch",
+    "/DOUTPUT_FILE=$output",
+    "/DGATEWAY_EXE=$gatewayExe",
+    "/DWEB_DIR=$(Join-Path $Frontend 'dist')",
+    "/DROOT_DIR=$Root",
+    "/DBUILD_ASSETS=$buildAssets",
+    (Join-Path $Root 'packaging\installer.nsi')
+)
+Invoke-Native $makeNsis $arguments
+Write-Host "Built $output"

@@ -19,7 +19,7 @@ Self-hosted remote desktop for a Windows PC, delivered through its own web page.
 - Supports dynamic resolution, HiDPI physical-pixel rendering, actual-size/fit/fill scaling, and 32-bit lossless or 16-bit compressed graphics.
 - Provides fullscreen mode, Ctrl+Alt+Del, Windows key, a pinnable auto-hiding connection bar, and clipboard integration.
 - Includes Simplified Chinese and English interfaces, plus light, dark, and system themes.
-- Ships x64 and ARM64 installers for machine-wide or current-user installation.
+- Ships x64 and ARM64 installers.
 
 ## Requirements
 
@@ -33,14 +33,12 @@ Use a current Chromium-based browser or Firefox on the connecting device.
 
 Download the appropriate installer from [Releases](https://github.com/pageway/pageway-rdp/releases/latest):
 
-| Scope | Architecture | File |
-| --- | --- | --- |
-| All users, administrator required | x64 (AMD64) | `Pageway-Setup-1.0.0-windows-x64.exe` |
-| Current user | x64 (AMD64) | `Pageway-Setup-1.0.0-windows-x64-user.exe` |
-| All users, administrator required | ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
-| Current user | ARM64 | `Pageway-Setup-1.0.0-windows-arm64-user.exe` |
+| Architecture | File |
+| --- | --- |
+| x64 (AMD64) | `Pageway-Setup-1.0.0-windows-x64.exe` |
+| ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
 
-The bilingual installer defaults to port `7172`. It enables Remote Desktop, adds a firewall exception for Pageway, and starts Pageway after Windows sign-in. A current-user installation can request administrator approval once for these system changes.
+The bilingual installer requires administrator approval and defaults to port `7172`. It enables Remote Desktop, adds a firewall exception for Pageway, and starts Pageway after Windows sign-in.
 
 Open **Pageway** from the Start menu, or visit:
 
@@ -96,7 +94,7 @@ Uninstall Pageway from Windows **Installed apps**. The uninstaller can ask wheth
 & "$env:ProgramFiles\Pageway\uninstall.exe" /S
 ```
 
-For a current-user installation, the uninstaller is under `$env:LOCALAPPDATA\Programs\Pageway\uninstall.exe`. Uninstalling does not disable Windows Remote Desktop, because it may have been enabled before installation or used by other software.
+Uninstalling does not disable Windows Remote Desktop, because it may have been enabled before installation or used by other software.
 
 ## Roadmap
 

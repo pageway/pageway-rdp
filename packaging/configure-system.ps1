@@ -32,22 +32,6 @@ if ($ConfigPath) {
     [IO.File]::WriteAllText($ConfigPath, $config, [Text.UTF8Encoding]::new($false))
 }
 
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-$principal = [Security.Principal.WindowsPrincipal]::new($identity)
-$isAdministrator = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-if (-not $isAdministrator) {
-    $arguments = @(
-        '-NoProfile', '-ExecutionPolicy', 'Bypass',
-        '-File', "`"$PSCommandPath`"",
-        '-GatewayPath', "`"$GatewayPath`"",
-        '-Port', $Port
-    )
-    if ($Remove) { $arguments += '-Remove' }
-    $process = Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -PassThru -ArgumentList $arguments
-    exit $process.ExitCode
-}
-
 if ($Remove) {
     Remove-NetFirewallRule -Name 'Pageway-Web' -ErrorAction SilentlyContinue
     exit 0

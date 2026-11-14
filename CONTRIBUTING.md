@@ -34,29 +34,26 @@ git clone --recurse-submodules https://github.com/pageway/pageway-rdp.git
 cd pageway-rdp
 ```
 
-Build the x64 machine-wide installer:
+Build the x64 installer:
 
 ```powershell
-.\packaging\build.ps1 -Arch x64 -Mode machine
+.\packaging\build.ps1 -Arch x64
 ```
 
 Other common builds:
 
 ```powershell
-# Build both machine-wide and current-user x64 installers
-.\packaging\build.ps1 -Arch x64 -AllModes
-
-# Build both ARM64 installers
-.\packaging\build.ps1 -Arch arm64 -AllModes
+# Build the ARM64 installer
+.\packaging\build.ps1 -Arch arm64
 
 # Build only the WASM and web frontend
 .\packaging\build.ps1 -FrontendOnly
 
-# Rebuild installers using an existing frontend/dist
-.\packaging\build.ps1 -SkipFrontend -Arch x64 -AllModes
+# Rebuild an installer using an existing frontend/dist
+.\packaging\build.ps1 -SkipFrontend -Arch x64
 ```
 
-Installers are written to `dist/`. The build script also applies the required Vite compatibility adjustment to generated wasm-bindgen glue and links the Windows CRT statically.
+Installers are written to `dist/`. They install for all users and require administrator approval. The build script also applies the required Vite compatibility adjustment to generated wasm-bindgen glue and links the Windows CRT statically.
 
 For frontend development, build the WASM package once and then start Vite:
 
@@ -112,12 +109,10 @@ The [`release`](.github/workflows/release.yml) workflow supports manual runs and
 
 1. Push the intended commit to GitHub.
 2. Open **Actions → release → Run workflow** and run it from the intended branch.
-3. Wait for `notes` and `installers` to succeed. `installers` builds the web frontend once, then both architectures, and fails unless exactly the four expected installers exist.
-4. Download the four installers from the workflow run's **Artifacts** section. Each artifact is a single uncompressed `.exe`:
+3. Wait for `notes` and `installers` to succeed. `installers` builds the web frontend once, then both architectures, and fails unless exactly the two expected installers exist.
+4. Download the two installers from the workflow run's **Artifacts** section. Each artifact is a single uncompressed `.exe`:
    - `Pageway-Setup-x.y.z-windows-x64.exe`
-   - `Pageway-Setup-x.y.z-windows-x64-user.exe`
    - `Pageway-Setup-x.y.z-windows-arm64.exe`
-   - `Pageway-Setup-x.y.z-windows-arm64-user.exe`
 5. Install and test the downloaded packages.
 6. Open the `notes` job summary on the run page to preview the description the tag run will put on the GitHub Release page.
 
@@ -149,6 +144,6 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The tag run rebuilds the four installers and creates a GitHub Release with only those four files attached. Its description shows English by default, with Simplified Chinese collapsed below it.
+The tag run rebuilds the two installers and creates a GitHub Release with only those two files attached. Its description shows English by default, with Simplified Chinese collapsed below it.
 
 > Pushing a version tag creates a public Release immediately in the current workflow. Do not tag a commit until the manual artifacts have passed verification. To change an already tagged release, create a new corrective version instead of silently replacing what users downloaded.

@@ -19,7 +19,7 @@
 - 支持动态分辨率、高分屏物理像素渲染、原始大小/适应窗口/填满窗口，以及 32 位无损或 16 位压缩图形。
 - 提供全屏、Ctrl+Alt+Del、Windows 键、可钉住并自动隐藏的连接栏和剪贴板。
 - 支持简体中文/英文，以及浅色、深色和跟随系统主题。
-- 提供 x64、ARM64，以及所有用户/当前用户四种安装包。
+- 提供 x64 和 ARM64 两种安装包。
 
 ## 环境要求
 
@@ -33,14 +33,12 @@ Pageway 支持 Windows 10/11 专业版、企业版、教育版，以及 Windows 
 
 从 [Releases](https://github.com/pageway/pageway-rdp/releases/latest) 下载适合这台电脑的安装包：
 
-| 安装范围 | 处理器架构 | 文件 |
-| --- | --- | --- |
-| 所有用户，需要管理员 | x64（AMD64） | `Pageway-Setup-1.0.0-windows-x64.exe` |
-| 当前用户 | x64（AMD64） | `Pageway-Setup-1.0.0-windows-x64-user.exe` |
-| 所有用户，需要管理员 | ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
-| 当前用户 | ARM64 | `Pageway-Setup-1.0.0-windows-arm64-user.exe` |
+| 处理器架构 | 文件 |
+| --- | --- |
+| x64（AMD64） | `Pageway-Setup-1.0.0-windows-x64.exe` |
+| ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
 
-双语安装器默认使用端口 `7172`。安装器会启用本机远程桌面、允许 Pageway 通过防火墙，并设置登录 Windows 后自动启动。当前用户安装可能因这些必要配置请求一次管理员授权。
+双语安装器需要管理员授权，默认使用端口 `7172`。安装器会启用本机远程桌面、允许 Pageway 通过防火墙，并设置登录 Windows 后自动启动。
 
 从开始菜单打开 **Pageway**，或直接访问：
 
@@ -96,7 +94,7 @@ tls\
 & "$env:ProgramFiles\Pageway\uninstall.exe" /S
 ```
 
-当前用户安装的卸载程序位于 `$env:LOCALAPPDATA\Programs\Pageway\uninstall.exe`。卸载不会关闭 Windows 远程桌面，因为它可能在安装前已经启用或被其他用途使用。
+卸载不会关闭 Windows 远程桌面，因为它可能在安装前已经启用或被其他用途使用。
 
 ## 后续路线
 

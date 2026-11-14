@@ -11,9 +11,6 @@ ManifestDPIAware true
 !ifndef VERSION
   !error "VERSION is required"
 !endif
-!ifndef MODE
-  !error "MODE is required"
-!endif
 !ifndef ARCH
   !error "ARCH is required"
 !endif
@@ -38,26 +35,12 @@ ManifestDPIAware true
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Pageway"
 !define SETTINGS_KEY "Software\Pageway"
 
-!if "${MODE}" == "machine"
-  !define REG_ROOT HKLM
-  !define EXECUTION_LEVEL admin
-  !define SHELL_CONTEXT all
-  !define DEFAULT_INSTALL_DIR "$PROGRAMFILES64\Pageway"
-!else if "${MODE}" == "user"
-  !define REG_ROOT HKCU
-  !define EXECUTION_LEVEL user
-  !define SHELL_CONTEXT current
-  !define DEFAULT_INSTALL_DIR "$LOCALAPPDATA\Programs\Pageway"
-!else
-  !error "MODE must be machine or user"
-!endif
-
 Name "${PRODUCT_NAME}"
 OutFile "${OUTPUT_FILE}"
 Icon "${ROOT_DIR}\assets\pageway-app.ico"
 UninstallIcon "${ROOT_DIR}\assets\pageway-app.ico"
-InstallDir "${DEFAULT_INSTALL_DIR}"
-RequestExecutionLevel ${EXECUTION_LEVEL}
+InstallDir "$PROGRAMFILES64\Pageway"
+RequestExecutionLevel admin
 BrandingText "${PRODUCT_NAME} ${VERSION}"
 VIProductVersion "${VERSION}.0"
 VIFileVersion "${VERSION}.0"
@@ -105,16 +88,14 @@ LangString PortLabel ${LANG_ENGLISH} "Web port (default: 7172)"
 LangString PortLabel ${LANG_SIMPCHINESE} "网页端口（默认：7172）"
 LangString PreparationHint ${LANG_ENGLISH} "Setup enables Windows Remote Desktop, allows Pageway through Windows Firewall, and starts Pageway when you sign in."
 LangString PreparationHint ${LANG_SIMPCHINESE} "安装将启用本机远程桌面、允许 Pageway 通过防火墙，并在登录 Windows 后自动启动。"
-LangString ElevationHint ${LANG_ENGLISH} "A per-user installation may request administrator approval once for the required system setup."
-LangString ElevationHint ${LANG_SIMPCHINESE} "当前用户安装可能因必要的系统配置请求一次管理员授权。"
 LangString InvalidPort ${LANG_ENGLISH} "Enter a port from 1 to 65535."
 LangString InvalidPort ${LANG_SIMPCHINESE} "请输入 1 到 65535 之间的端口。"
 LangString UnsupportedWindows ${LANG_ENGLISH} "Pageway requires Windows 10 or later, or Windows Server 2016 or later."
 LangString UnsupportedWindows ${LANG_SIMPCHINESE} "Pageway 需要 Windows 10 或更高版本，或 Windows Server 2016 或更高版本。"
 LangString MissingRdpHost ${LANG_ENGLISH} "This Windows edition does not include the Remote Desktop host component. Use Windows Pro, Enterprise, Education, or Server. Pageway does not install Windows components."
 LangString MissingRdpHost ${LANG_SIMPCHINESE} "当前 Windows 版本没有远程桌面宿主组件。请使用专业版、企业版、教育版或服务器版。Pageway 不会安装 Windows 组件。"
-LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed. You can still use Pageway on this PC, or run the installer again as an administrator."
-LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成。你仍可在本机使用 Pageway，也可以以管理员身份重新运行安装程序。"
+LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed. You can still use Pageway on this PC. Check the installation log and run the installer again."
+LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成。你仍可在本机使用 Pageway，请检查安装日志后重新运行安装程序。"
 LangString TaskFailed ${LANG_ENGLISH} "Pageway could not be started automatically. Check the installation log and run the installer again."
 LangString TaskFailed ${LANG_SIMPCHINESE} "Pageway 无法自动启动。请检查安装日志，并重新运行安装程序。"
 LangString FinishRun ${LANG_ENGLISH} "Open Pageway"
@@ -152,13 +133,13 @@ Function .onInit
   rdp_host_present:
   SetShellVarContext current
   StrCpy $ConfigDir "$LOCALAPPDATA\Pageway"
-  SetShellVarContext ${SHELL_CONTEXT}
+  SetShellVarContext all
   StrCpy $Port "7172"
-  ReadRegStr $0 ${REG_ROOT} "${SETTINGS_KEY}" "InstallLocation"
+  ReadRegStr $0 HKLM "${SETTINGS_KEY}" "InstallLocation"
   ${If} $0 != ""
     StrCpy $INSTDIR $0
   ${EndIf}
-  ReadRegStr $0 ${REG_ROOT} "${SETTINGS_KEY}" "Port"
+  ReadRegStr $0 HKLM "${SETTINGS_KEY}" "Port"
   ${If} $0 != ""
     StrCpy $Port $0
   ${EndIf}
@@ -180,8 +161,6 @@ Function ConfigCreate
 
   ${NSD_CreateLabel} 0 46u 100% 42u "$(PreparationHint)"
   Pop $0
-  ${NSD_CreateLabel} 0 96u 100% 30u "$(ElevationHint)"
-  Pop $0
 
   nsDialogs::Show
 FunctionEnd
@@ -201,7 +180,7 @@ FunctionEnd
 
 Section "Install"
   SetRegView 64
-  SetShellVarContext ${SHELL_CONTEXT}
+  SetShellVarContext all
   nsExec::ExecToLog 'schtasks.exe /End /TN "Pageway"'
   IfFileExists "$INSTDIR\configure-system.ps1" 0 no_existing_install
   nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -StopGateway'
@@ -223,18 +202,18 @@ Section "Install"
     MessageBox MB_ICONEXCLAMATION|MB_OK "$(SystemConfigFailed)" /SD IDOK
   ${EndIf}
 
-  WriteRegStr ${REG_ROOT} "${SETTINGS_KEY}" "InstallLocation" "$INSTDIR"
-  WriteRegStr ${REG_ROOT} "${SETTINGS_KEY}" "Port" "$Port"
-  WriteRegDWORD ${REG_ROOT} "${SETTINGS_KEY}" "ConfiguredSystem" 1
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "DisplayName" "Pageway"
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "DisplayVersion" "${VERSION}"
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\pageway-gateway.exe"
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegStr ${REG_ROOT} "${UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\uninstall.exe" /S'
-  WriteRegDWORD ${REG_ROOT} "${UNINSTALL_KEY}" "NoModify" 1
-  WriteRegDWORD ${REG_ROOT} "${UNINSTALL_KEY}" "NoRepair" 1
+  WriteRegStr HKLM "${SETTINGS_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "${SETTINGS_KEY}" "Port" "$Port"
+  WriteRegDWORD HKLM "${SETTINGS_KEY}" "ConfiguredSystem" 1
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayName" "Pageway"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayVersion" "${VERSION}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\pageway-gateway.exe"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\uninstall.exe" /S'
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoModify" 1
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoRepair" 1
 
   nsExec::ExecToStack 'schtasks.exe /Create /TN "Pageway" /SC ONLOGON /RL LIMITED /IT /F /TR "\"$INSTDIR\pageway-gateway.exe\" --config \"$ConfigDir\config.json\" --log \"$ConfigDir\gateway.log\""'
   Pop $0
@@ -258,12 +237,12 @@ Function un.onInit
   SetRegView 64
   SetShellVarContext current
   StrCpy $ConfigDir "$LOCALAPPDATA\Pageway"
-  SetShellVarContext ${SHELL_CONTEXT}
+  SetShellVarContext all
 FunctionEnd
 
 Section "Uninstall"
   SetRegView 64
-  SetShellVarContext ${SHELL_CONTEXT}
+  SetShellVarContext all
   StrCpy $RemoveData 1
   ${IfNot} ${Silent}
     MessageBox MB_YESNO|MB_ICONQUESTION "$(RemoveData)" IDYES +2
@@ -273,14 +252,14 @@ Section "Uninstall"
   nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -StopGateway'
   nsExec::ExecToLog 'schtasks.exe /End /TN "Pageway"'
   nsExec::ExecToLog 'schtasks.exe /Delete /TN "Pageway" /F'
-  ReadRegDWORD $0 ${REG_ROOT} "${SETTINGS_KEY}" "ConfiguredSystem"
+  ReadRegDWORD $0 HKLM "${SETTINGS_KEY}" "ConfiguredSystem"
   ${If} $0 == 1
     nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -Remove'
   ${EndIf}
 
   RMDir /r "$SMPROGRAMS\Pageway"
-  DeleteRegKey ${REG_ROOT} "${UNINSTALL_KEY}"
-  DeleteRegKey ${REG_ROOT} "${SETTINGS_KEY}"
+  DeleteRegKey HKLM "${UNINSTALL_KEY}"
+  DeleteRegKey HKLM "${SETTINGS_KEY}"
   ${If} $RemoveData == 1
     RMDir /r $ConfigDir
   ${EndIf}

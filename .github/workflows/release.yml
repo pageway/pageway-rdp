@@ -1,7 +1,7 @@
 name: release
 
-# Push a tag matching VERSION to publish the four installers. Manual runs build
-# the same four installers as artifacts only and preview the Release notes.
+# Push a tag matching VERSION to publish the x64 and ARM64 installers. Manual runs
+# build the same two installers as artifacts only and preview the Release notes.
 on:
   push:
     tags: ["v*"]
@@ -34,7 +34,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown, x86_64-pc-windows-msvc, aarch64-pc-windows-msvc
-      - uses: jetli/wasm-pack-action@v0.4.0
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -42,10 +44,10 @@ jobs:
       - shell: powershell
         run: |
           packaging/build.ps1 -FrontendOnly
-          packaging/build.ps1 -SkipFrontend -AllModes -Arch x64
-          packaging/build.ps1 -SkipFrontend -AllModes -Arch arm64
+          packaging/build.ps1 -SkipFrontend -Arch x64
+          packaging/build.ps1 -SkipFrontend -Arch arm64
           $version = (Get-Content -Raw VERSION).Trim()
-          $expected = @('x64', 'x64-user', 'arm64', 'arm64-user') | ForEach-Object { "Pageway-Setup-$version-windows-$_.exe" }
+          $expected = @('x64', 'arm64') | ForEach-Object { "Pageway-Setup-$version-windows-$_.exe" }
           $actual = @(Get-ChildItem dist -Filter '*.exe' | ForEach-Object Name)
           if (Compare-Object $expected $actual) {
             Write-Error "Unexpected installers: $($actual -join ', ')"
@@ -58,15 +60,7 @@ jobs:
           archive: false
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-x64-user.exe
-          archive: false
-      - uses: actions/upload-artifact@v7
-        with:
           path: dist/Pageway-Setup-${{ env.VERSION }}-windows-arm64.exe
-          archive: false
-      - uses: actions/upload-artifact@v7
-        with:
-          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-arm64-user.exe
           archive: false
 
   release:
@@ -82,7 +76,7 @@ jobs:
           merge-multiple: true
       - run: |
           ls -l dist
-          test "$(find dist -maxdepth 1 -type f -name 'Pageway-Setup-*.exe' | wc -l)" -eq 4
+          test "$(find dist -maxdepth 1 -type f -name 'Pageway-Setup-*.exe' | wc -l)" -eq 2
           pwsh packaging/release_notes.ps1 release-notes.md > /dev/null
       - run: gh release create "$GITHUB_REF_NAME" dist/Pageway-Setup-*.exe --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
         env:
