@@ -1,15 +1,17 @@
 # Changelog
 
+**English** | [简体中文](CHANGELOG.zh-CN.md)
+
 ## [1.0.0] - 2026-11-13
 
-首个正式版本。
+First stable release.
 
-- Rust 网关通过 WebSocket 和 RDCleanPath 接入浏览器，在本机 RDP 服务之间完成 TLS 终结和双向字节透传。
-- 基于 IronRDP WASM 的网页客户端支持 CredSSP/NLA、动态分辨率、32 位无损或 16 位压缩图形、Chromium 完整剪贴板与 Firefox 手动文本剪贴板、简体中文/英文和浅色/深色/跟随系统。
-- 重新运行安装器可修改端口；RDP 目标固定为当前电脑，不设置额外网关口令。
-- NSIS 双语安装器检查原生 RDP 宿主组件，自动配置远程桌面、防火墙和登录后自启，提供 x64/ARM64、管理员/当前用户四种安装包。
-- 网关静态链接 Windows CRT，目标电脑无需安装构建工具或额外运行库。
-- 同一网页端口支持 HTTPS/WSS 和 HTTP，首次远程访问通过仿远程桌面的身份确认弹窗选择继续或永久信任本地证书（Windows 上 Chrome、Edge、Firefox 通用）；根证书限制为本机名和私网地址，IP 变化自动换发网站证书。
-- 按浏览器屏幕缩放比例使用物理像素和 RDP 缩放，改善高分屏清晰度。
-- 顶部连接栏采用统一尺寸的图标按钮，支持钉住、自动隐藏和顶边唤出，提供全屏、Ctrl+Alt+Del、Windows 键、剪贴板和断开按钮，HTTPS 全屏支持捕获系统组合键。
-- IronRDP 的 Pageway 修改直接维护在子模块源码中，不再在构建时临时打补丁。
+- The Rust gateway connects the browser over WebSocket and RDCleanPath, terminates TLS to the local RDP service, and relays traffic in both directions.
+- The IronRDP WASM web client supports CredSSP/NLA, dynamic resolution, 32-bit lossless or 16-bit compressed graphics, full clipboard on Chromium and a manual text clipboard on Firefox, Simplified Chinese and English, and light, dark, and system themes.
+- Run the installer again to change the port. The RDP destination is fixed to this PC, and no separate gateway password is required.
+- The bilingual NSIS installer checks the native RDP host components, configures Remote Desktop, the firewall, and startup after sign-in, and is available for x64 and ARM64 in machine-wide and current-user editions.
+- The gateway links the Windows CRT statically, so target PCs need no build tools or extra runtimes.
+- One web port serves both HTTPS/WSS and HTTP. On first remote access, a Remote Desktop-style identity prompt lets users continue once or permanently trust the local certificate (shared by Chrome, Edge, and Firefox on Windows). The root certificate is restricted to the PC name and private addresses, and the website certificate is reissued automatically when IP addresses change.
+- Physical pixels and RDP scaling follow the browser's display scale, improving sharpness on HiDPI screens.
+- The connection bar uses consistently sized icon buttons, can be pinned, auto-hidden, and revealed from the top edge, and provides fullscreen, Ctrl+Alt+Del, Windows key, clipboard, and disconnect controls. Fullscreen HTTPS sessions can capture system shortcuts.
+- Pageway's IronRDP changes are maintained directly in the submodule source instead of being patched during the build.

@@ -101,7 +101,7 @@ Never put real Windows passwords, private keys, certificates with private keys, 
 
 - `README.md` is the default English GitHub landing page and is written for users.
 - `README.zh-CN.md` is the Simplified Chinese counterpart. Keep both files synchronized and use relative paths such as `docs/images/login.png` so GitHub renders images directly.
-- `CHANGELOG.md` contains user-facing release changes and supplies the Release notes.
+- `CHANGELOG.md` (English) and `CHANGELOG.zh-CN.md` (Simplified Chinese) contain user-facing changes. Keep the same version sections in both; together they become the GitHub Release description.
 - Developer and release instructions belong here rather than expanding the user README.
 
 ## Automated packaging and release
@@ -112,9 +112,14 @@ The [`release`](.github/workflows/release.yml) workflow supports manual runs and
 
 1. Push the intended commit to GitHub.
 2. Open **Actions → release → Run workflow** and run it from the intended branch.
-3. Wait for `notes`, `frontend`, `installers (x64)`, and `installers (arm64)` to succeed.
-4. Download `installers-x64`, `installers-arm64`, and `release-notes` from the workflow run's **Artifacts** section.
-5. Install and test the downloaded packages. Confirm the four filenames, architectures, installation scopes, and release notes before proceeding.
+3. Wait for `notes` and `installers` to succeed. `installers` builds the web frontend once, then both architectures, and fails unless exactly the four expected installers exist.
+4. Download the four installers from the workflow run's **Artifacts** section. Each artifact is a single uncompressed `.exe`:
+   - `Pageway-Setup-x.y.z-windows-x64.exe`
+   - `Pageway-Setup-x.y.z-windows-x64-user.exe`
+   - `Pageway-Setup-x.y.z-windows-arm64.exe`
+   - `Pageway-Setup-x.y.z-windows-arm64-user.exe`
+5. Install and test the downloaded packages.
+6. Open the `notes` job summary on the run page to preview the description the tag run will put on the GitHub Release page.
 
 A manual run uploads artifacts only; it does not create a GitHub Release.
 
@@ -127,7 +132,13 @@ Before tagging, update the same version in:
 - `frontend/package.json`
 - `frontend/package-lock.json`
 
-Add a matching `## [x.y.z] - YYYY-MM-DD` section to `CHANGELOG.md`. The `notes` job rejects a tag that does not match `VERSION`, and `packaging/release_notes.ps1` fails if the changelog section is missing.
+Add a matching `## [x.y.z] - YYYY-MM-DD` section to both `CHANGELOG.md` and `CHANGELOG.zh-CN.md`. The `notes` job rejects a tag that does not match `VERSION`, and `packaging/release_notes.ps1` fails if either section is missing.
+
+The script builds the Release description from the English section, followed by the Chinese section inside a collapsed `<details>` block. Preview it locally with:
+
+```powershell
+.\packaging\release_notes.ps1 release-notes.md
+```
 
 ### 3. Publish a release
 
@@ -138,6 +149,6 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The tag run rebuilds the four installers and creates a GitHub Release using the matching changelog section.
+The tag run rebuilds the four installers and creates a GitHub Release with only those four files attached. Its description shows English by default, with Simplified Chinese collapsed below it.
 
 > Pushing a version tag creates a public Release immediately in the current workflow. Do not tag a commit until the manual artifacts have passed verification. To change an already tagged release, create a new corrective version instead of silently replacing what users downloaded.

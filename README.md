@@ -76,7 +76,7 @@ The default display mode uses actual size, 32-bit lossless graphics, dynamic res
 
 On localhost or HTTPS, Chromium can synchronize text, HTML, and PNG clipboard content automatically. Firefox and HTTP sessions use the clipboard panel for manual text transfer.
 
-Current limitations include no audio, microphone, camera, or video redirection.
+Audio, printing, file transfer, microphone, and camera are not available yet; see the [Roadmap](#roadmap).
 
 ## Settings and uninstall
 
@@ -100,37 +100,56 @@ For a current-user installation, the uninstaller is under `$env:LOCALAPPDATA\Pro
 
 ## Roadmap
 
-The following phases are planned, not commitments for the current release. Each phase must preserve the product boundary: one gateway on each controlled PC, no central account or management service, no mandatory relay, no public-internet exposure by default, and no silent storage of credentials.
+Pageway aims to offer what the native Windows Remote Desktop client (mstsc) offers wherever a browser allows it, and to handle each feature the way mstsc does. The work is split into four phases; each phase is tested on real Windows hosts and released as its own minor version. The product boundary is the same in every phase: Pageway connects only to the PC's own RDP service at `127.0.0.1:3389`, has no central server, and installs no Windows components.
 
-### Phase 2 — Complete the everyday RDP experience
+Items marked **HTTPS** need a secure page (a trusted certificate or localhost). Browsers disable the APIs they rely on in limited mode.
 
-**Goal:** make the existing Windows RDP client suitable for longer daily sessions before adding more protocols.
+### Phase 1 — Foundation (done in 1.0.0)
 
-- **Audio:** add remote audio output first, with mute and volume controls. Evaluate microphone input separately; camera and video redirection must not be exposed as working options until they have real end-to-end support.
-- **Files and drives:** build on IronRDP's file-transfer support for explicit upload/download, then evaluate drive redirection. Require visible user actions and clear remote/local direction; never expose an entire local disk by default.
-- **Input coverage:** verify Unicode, IME, international keyboard layouts, key-up cleanup after focus loss, and special combinations on Chromium and Firefox.
-- **Display coverage:** test multi-monitor layouts, monitor changes, DPI changes, window resizing, and fullscreen transitions without losing the existing dynamic-resolution and no-overflow behavior.
-- **Quality gate:** repeat Windows 10/11 and Windows Server tests, poor-network and long-session tests, clipboard regression tests, and disconnect/reconnect cleanup. Keep features that are not fully implemented out of the release UI.
+- IronRDP maintained as a forked submodule instead of build-time patches.
+- HTTPS/WSS on the same port as HTTP, the first-trust prompt, and certificate downloads for each platform.
+- HiDPI sharpness: the session uses physical pixels and a scale factor that follow the local display scale.
+- Fullscreen, an mstsc-style connection bar, and Windows shortcut capture in fullscreen.
+- Text, HTML, and image clipboard on HTTPS, with the manual text panel as the HTTP fallback.
 
-### Phase 3 — Add VNC without changing the product model
+### Phase 2 — Local resources
 
-**Goal:** connect a browser to an existing VNC server on the controlled machine through the same kind of local web page, while leaving the RDP path independent.
+Corresponds to the **Local Resources** tab in mstsc.
 
-- Select a maintained RFB/VNC implementation after reviewing its license, protocol coverage, and WebAssembly or gateway integration costs; keep protocol code separate from shared UI.
-- Start with desktop video, keyboard/mouse input, scaling, and text clipboard. Treat server-side resizing, audio, and file transfer as separate capabilities rather than assuming RDP behavior carries over.
-- Design authentication and transport security per VNC server. Do not describe legacy VNC password authentication as encrypted, do not accept unknown TLS identities silently, and do not reuse the RDP certificate UI without adapting its meaning.
-- Define the supported gateway operating systems and installers explicitly. A Linux VNC host must not weaken or complicate the existing Windows RDP installer.
-- Test against at least two maintained VNC servers, including wrong-password, disconnect, resize, keyboard-layout, and untrusted-network cases. Document any server-specific limitation next to the connection option.
+- **Remote audio**, with the same three options as mstsc:
+  - *Play on this computer* (default): play remote sound in the browser, starting with PCM and then adding IMA-ADPCM to save bandwidth. Works on HTTP as well.
+  - *Play on remote computer*: leave sound on the remote PC.
+  - *Do not play*: the current behavior.
+- **Printing**: enabled by default, as in mstsc. A virtual printer based on the `Microsoft Print to PDF` driver appears in the remote session; each print job opens as a PDF in a new browser tab, from which it can be printed locally.
+- **File transfer**: drag files onto the remote screen to paste them on the remote PC; files copied on the remote PC are offered as browser downloads. Mapping a local folder as a remote drive is in Phase 4.
+- **Audio recording** (HTTPS): send the local microphone to the remote PC. Off by default, as in mstsc.
+- **Release check**: a remote system sound plays locally; printing from Notepad produces a PDF in the browser; drag-and-drop upload and remote-copy download work; the microphone records in the remote session.
 
-### Phase 4 — Add SSH terminal access
+### Phase 3 — Smoothness
 
-**Goal:** provide a browser terminal for the controlled machine's own SSH server, with the same no-central-service boundary.
+Corresponds to the **Experience** tab in mstsc and to the graphics channel mstsc uses by default.
 
-- Use a maintained SSH implementation after license and security review. Support password and keyboard-interactive authentication first; private keys and passphrases, if added, must remain in memory and never be written to Pageway configuration or logs.
-- Implement host-key verification before authentication, with a clear fingerprint confirmation flow and a hard failure when a previously trusted host key changes. Do not default to accepting every host key.
-- Provide UTF-8 rendering, terminal resize, colors, scrollback, clipboard, and reliable control keys. Keep terminal session state separate from RDP/VNC components.
-- Defer port forwarding, agent forwarding, SFTP, and tunneling until the basic terminal is stable; none should be enabled implicitly.
-- Test Windows OpenSSH Server and at least one maintained Linux SSH server, covering host-key mismatch, authentication failure, disconnects, resize, non-ASCII text, and secret-free logs.
+- **Bulk compression**: enable RDP 6.1 bulk compression to reduce bandwidth at almost no cost.
+- **Connection speed presets**: LAN, broadband, and low-speed presets, as in mstsc, controlling desktop background, font smoothing, desktop composition, window contents while dragging, menu and window animation, and visual styles. LAN (everything on) is the default.
+- **Time zone redirection**: send the browser's time zone so the remote session shows local time.
+- **Automatic reconnection**: keep the server's auto-reconnect cookie, reconnect automatically after a network drop, and show an mstsc-style "Reconnecting" overlay.
+- **Graphics pipeline (RDPGFX)**: the change with the largest effect on smoothness and bandwidth. Start with codecs that need no external decoder (Planar, ClearCodec, RemoteFX Progressive), then add H.264 AVC420/AVC444 decoding through WebCodecs (HTTPS). The color-depth option then follows mstsc's "Highest quality (32-bit)" meaning.
+- **Release check**: the graphics channel is negotiated with the server; cutting the network reconnects the session automatically.
+
+### Phase 4 — Experimental
+
+These depend on newer or browser-specific APIs.
+
+- **Multiple monitors** (HTTPS, Chromium): use the Window Management API to span the session across local monitors.
+- **Touch input**: send touch gestures to the remote PC as RDP multi-touch input.
+- **Camera** (HTTPS): redirect the local camera to the remote PC, encoding video with WebCodecs.
+- **Mobile soft keyboard**: type into the remote session with the on-screen keyboard of a phone or tablet.
+- **Local folder as a remote drive** (Chromium): map a folder chosen in the browser as a drive in the remote session.
+
+### Not planned
+
+- Smart cards, serial and parallel ports, USB, and other Plug and Play devices: browsers do not provide the device access these require. WebUSB covers only a few devices and remains a research item.
+- RD Gateway, server redirection, and UDP transport: outside Pageway's product boundary, or unavailable in browsers.
 
 ## Architecture
 

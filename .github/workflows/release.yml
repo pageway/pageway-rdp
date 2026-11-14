@@ -1,7 +1,7 @@
 name: release
 
-# Push a tag matching VERSION to publish four installers and the matching
-# CHANGELOG section. Manual runs upload the same packages as artifacts only.
+# Push a tag matching VERSION to publish the four installers. Manual runs build
+# the same four installers as artifacts only and preview the Release notes.
 on:
   push:
     tags: ["v*"]
@@ -21,13 +21,10 @@ jobs:
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
             Write-Error "Tag $env:GITHUB_REF_NAME does not match VERSION $version"
           }
-          & packaging/release_notes.ps1 release-notes.md
-      - uses: actions/upload-artifact@v7
-        with:
-          name: release-notes
-          path: release-notes.md
+          & packaging/release_notes.ps1 release-notes.md | Out-Null
+          [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY, [IO.File]::ReadAllText('release-notes.md'))
 
-  frontend:
+  installers:
     needs: notes
     runs-on: windows-latest
     steps:
@@ -36,56 +33,57 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown, x86_64-pc-windows-msvc, aarch64-pc-windows-msvc
       - uses: jetli/wasm-pack-action@v0.4.0
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - shell: powershell
-        run: packaging/build.ps1 -FrontendOnly
-      - uses: actions/upload-artifact@v7
-        with:
-          name: frontend-dist
-          path: frontend/dist
-
-  installers:
-    needs: [notes, frontend]
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x64, arm64]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc, aarch64-pc-windows-msvc
-      - uses: actions/download-artifact@v8
-        with:
-          name: frontend-dist
-          path: frontend/dist
       - run: choco install nsis -y --no-progress
       - shell: powershell
-        run: packaging/build.ps1 -SkipFrontend -AllModes -Arch ${{ matrix.arch }}
+        run: |
+          packaging/build.ps1 -FrontendOnly
+          packaging/build.ps1 -SkipFrontend -AllModes -Arch x64
+          packaging/build.ps1 -SkipFrontend -AllModes -Arch arm64
+          $version = (Get-Content -Raw VERSION).Trim()
+          $expected = @('x64', 'x64-user', 'arm64', 'arm64-user') | ForEach-Object { "Pageway-Setup-$version-windows-$_.exe" }
+          $actual = @(Get-ChildItem dist -Filter '*.exe' | ForEach-Object Name)
+          if (Compare-Object $expected $actual) {
+            Write-Error "Unexpected installers: $($actual -join ', ')"
+          }
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "VERSION=$version`n")
+      # archive: false uploads one file per step and uses the file name as the artifact name.
       - uses: actions/upload-artifact@v7
         with:
-          name: installers-${{ matrix.arch }}
-          path: dist/Pageway-Setup-*.exe
+          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-x64.exe
+          archive: false
+      - uses: actions/upload-artifact@v7
+        with:
+          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-x64-user.exe
+          archive: false
+      - uses: actions/upload-artifact@v7
+        with:
+          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-arm64.exe
+          archive: false
+      - uses: actions/upload-artifact@v7
+        with:
+          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-arm64-user.exe
           archive: false
 
   release:
-    needs: [notes, installers]
+    needs: installers
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
-          path: download
+          pattern: Pageway-Setup-*
+          path: dist
           merge-multiple: true
       - run: |
-          mkdir dist
-          find download -type f -name '*.exe' -exec mv -t dist {} +
           ls -l dist
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file download/release-notes.md
+          test "$(find dist -maxdepth 1 -type f -name 'Pageway-Setup-*.exe' | wc -l)" -eq 4
+          pwsh packaging/release_notes.ps1 release-notes.md > /dev/null
+      - run: gh release create "$GITHUB_REF_NAME" dist/Pageway-Setup-*.exe --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
