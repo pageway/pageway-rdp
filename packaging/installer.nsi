@@ -58,9 +58,6 @@ VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "${BUILD_ASSETS}\header.bmp"
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_FINISHPAGE_RUN "$INSTDIR\pageway-rdp.exe"
-!define MUI_FINISHPAGE_RUN_FUNCTION OpenLogin
-!define MUI_FINISHPAGE_RUN_TEXT "$(FinishRun)"
 !define MUI_WELCOMEPAGE_TEXT "$(WelcomeText)"
 !define MUI_DIRECTORYPAGE_TEXT_TOP "$(DirectoryText)"
 
@@ -68,6 +65,7 @@ VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
 !insertmacro MUI_PAGE_DIRECTORY
 Page custom ConfigCreate ConfigLeave
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW FinishShow
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -94,12 +92,16 @@ LangString UnsupportedWindows ${LANG_ENGLISH} "Pageway RDP requires Windows 10 o
 LangString UnsupportedWindows ${LANG_SIMPCHINESE} "Pageway RDP 需要 Windows 10 或更高版本，或 Windows Server 2016 或更高版本。"
 LangString MissingRdpHost ${LANG_ENGLISH} "This Windows edition does not include the Remote Desktop host component. Use Windows Pro, Enterprise, Education, or Server. Pageway RDP does not install Windows components."
 LangString MissingRdpHost ${LANG_SIMPCHINESE} "当前 Windows 版本没有远程桌面宿主组件。请使用专业版、企业版、教育版或服务器版。Pageway RDP 不会安装 Windows 组件。"
-LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed. You can still use Pageway RDP on this PC. Check the installation log and run the installer again."
-LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成。你仍可在本机使用 Pageway RDP，请检查安装日志后重新运行安装程序。"
+LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed, so other devices may not be able to connect. Check the installation log and run the installer again."
+LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成，其他设备可能无法连接。请检查安装日志后重新运行安装程序。"
 LangString TaskFailed ${LANG_ENGLISH} "Pageway RDP could not be started automatically. Check the installation log and run the installer again."
 LangString TaskFailed ${LANG_SIMPCHINESE} "Pageway RDP 无法自动启动。请检查安装日志，并重新运行安装程序。"
-LangString FinishRun ${LANG_ENGLISH} "Open Pageway RDP"
-LangString FinishRun ${LANG_SIMPCHINESE} "打开 Pageway RDP"
+LangString FinishText ${LANG_ENGLISH} "Pageway RDP is installed and starts when you sign in to Windows.$\r$\n$\r$\nOn another device on the same network, open one of these addresses in a browser:"
+LangString FinishText ${LANG_SIMPCHINESE} "Pageway RDP 已安装，登录 Windows 后会自动启动。$\r$\n$\r$\n在同一网络的另一台设备上，用浏览器打开以下任一地址："
+LangString FinishHint ${LANG_ENGLISH} "If this PC's IP address changes, use the new address with port $Port."
+LangString FinishHint ${LANG_SIMPCHINESE} "这台电脑的 IP 地址变化后，请改用新地址加端口 $Port。"
+LangString NoAddress ${LANG_ENGLISH} "No network address was found. Use this PC's IP address with port $Port."
+LangString NoAddress ${LANG_SIMPCHINESE} "未检测到网络地址。请使用这台电脑的 IP 地址加端口 $Port。"
 LangString RemoveData ${LANG_ENGLISH} "Also delete Pageway RDP settings and logs?"
 LangString RemoveData ${LANG_SIMPCHINESE} "是否同时删除 Pageway RDP 的配置和日志？"
 
@@ -108,6 +110,7 @@ Var PortInput
 Var Port
 Var ConfigDir
 Var RemoveData
+Var Addresses
 
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
@@ -174,8 +177,20 @@ Function ConfigLeave
   ${EndIf}
 FunctionEnd
 
-Function OpenLogin
-  ExecShell "open" "http://127.0.0.1:$Port/"
+Function FinishShow
+  ShowWindow $mui.FinishPage.Text ${SW_HIDE}
+  ${NSD_CreateLabel} 120u 45u 195u 44u "$(FinishText)"
+  Pop $0
+  SetCtlColors $0 "" "${MUI_BGCOLOR}"
+  ${If} $Addresses == ""
+    StrCpy $Addresses "$(NoAddress)"
+  ${EndIf}
+  nsDialogs::CreateControl EDIT ${DEFAULT_STYLES}|${WS_TABSTOP}|${ES_MULTILINE}|${ES_AUTOVSCROLL}|${ES_READONLY} ${WS_EX_CLIENTEDGE} 120u 92u 195u 52u $Addresses
+  Pop $0
+  SetCtlColors $0 "" "FFFFFF"
+  ${NSD_CreateLabel} 120u 150u 195u 24u "$(FinishHint)"
+  Pop $0
+  SetCtlColors $0 "" "${MUI_BGCOLOR}"
 FunctionEnd
 
 Section "Install"
@@ -187,7 +202,6 @@ Section "Install"
   no_existing_install:
   SetOutPath $INSTDIR
   File "/oname=pageway-rdp.exe" "${GATEWAY_EXE}"
-  File "/oname=pageway-app.ico" "${ROOT_DIR}\assets\pageway-app.ico"
   File "/oname=configure-system.ps1" "${ROOT_DIR}\packaging\configure-system.ps1"
   SetOutPath "$INSTDIR\web"
   File /r "${WEB_DIR}\*.*"
@@ -225,9 +239,9 @@ Section "Install"
     MessageBox MB_ICONEXCLAMATION|MB_OK "$(TaskFailed)" /SD IDOK
   ${EndIf}
 
-  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "http://127.0.0.1:$Port/"
-  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "IconFile" "$INSTDIR\pageway-app.ico"
-  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "IconIndex" "0"
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -Port $Port -ListAddresses'
+  Pop $0
+  Pop $Addresses
   WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
@@ -256,7 +270,6 @@ Section "Uninstall"
     nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -Remove'
   ${EndIf}
 
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}.url"
   DeleteRegKey HKLM "${UNINSTALL_KEY}"
   DeleteRegKey HKLM "${SETTINGS_KEY}"
   ${If} $RemoveData == 1

@@ -6,10 +6,24 @@ param(
     [int]$Port = 7172,
     [string]$ConfigPath,
     [switch]$Remove,
-    [switch]$StopGateway
+    [switch]$StopGateway,
+    [switch]$ListAddresses
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ($ListAddresses) {
+    $defaultRoutes = @(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.InterfaceIndex })
+    Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' -and
+            $_.InterfaceAlias -notlike 'vEthernet (WSL*' -and $_.InterfaceAlias -ne 'vEthernet (Default Switch)'
+        } |
+        Sort-Object @{ Expression = { $defaultRoutes -notcontains $_.InterfaceIndex } }, IPAddress |
+        ForEach-Object { "http://$($_.IPAddress):$Port/" }
+    exit 0
+}
 
 function Stop-Pageway {
     Get-CimInstance Win32_Process -Filter "Name = 'pageway-rdp.exe'" |

@@ -40,21 +40,23 @@ Download the appropriate installer from [Releases](https://github.com/pageway/pa
 
 The bilingual installer requires administrator approval and defaults to port `7172`. It enables Remote Desktop, adds a firewall exception for Pageway RDP, and starts Pageway RDP after Windows sign-in.
 
-Open **Pageway RDP** from the Start menu, or visit:
+The last page of the installer lists this PC's addresses, for example:
 
 ```text
-http://127.0.0.1:7172/
+http://192.168.1.20:7172/
 ```
+
+Open one of them in a browser on another device on the same LAN or private overlay network. If the PC's IP address changes, use the new address with the same port.
 
 ## Connect
 
-Sign in with the Windows username and password of the controlled PC. From another device, replace `127.0.0.1` with the PC's LAN or private-overlay-network address.
+Sign in with the Windows username and password of the controlled PC.
 
 Pageway RDP remembers the last username and display preferences. It does not store the Windows password; password storage is left to the browser's password manager.
 
 ### First connection and certificate trust
 
-When another device first connects over HTTP, Pageway RDP asks how to trust the PC's local certificate.
+When a device first connects over HTTP, Pageway RDP asks how to trust the PC's local certificate.
 
 <img src="docs/images/first-trust.png" alt="Pageway RDP certificate identity confirmation" width="720">
 
@@ -72,13 +74,13 @@ The connection bar provides fullscreen, Ctrl+Alt+Del, Windows key, clipboard, an
 
 The default display mode uses actual size, 32-bit lossless graphics, dynamic resolution, and physical pixels matching the local display scale. Open **Advanced** before connecting to choose fit/fill scaling or 16-bit compressed graphics.
 
-On localhost or HTTPS, Chromium can synchronize text, HTML, and PNG clipboard content automatically. Firefox and HTTP sessions use the clipboard panel for manual text transfer.
+On HTTPS, Chromium can synchronize text, HTML, and PNG clipboard content automatically. Firefox and HTTP sessions use the clipboard panel for manual text transfer.
 
 Audio, printing, file transfer, microphone, and camera are not available yet; see the [Roadmap](#roadmap).
 
 ## Settings and uninstall
 
-Run the installer again to change the web port. The RDP destination is fixed to `127.0.0.1:3389`; Pageway RDP is not an intermediate RDP proxy.
+Run the installer again to change the web port. Pageway RDP always connects to this PC's own Remote Desktop service (port 3389); it is not an intermediate RDP proxy.
 
 Configuration, logs, and local certificates are stored in `%LOCALAPPDATA%\Pageway RDP`:
 
@@ -98,9 +100,9 @@ Uninstalling does not disable Windows Remote Desktop, because it may have been e
 
 ## Roadmap
 
-Pageway RDP aims to offer what the native Windows Remote Desktop client (mstsc) offers wherever a browser allows it, and to handle each feature the way mstsc does. The work is split into four phases; each phase is tested on real Windows hosts and released as its own minor version. The product boundary is the same in every phase: Pageway RDP connects only to the PC's own RDP service at `127.0.0.1:3389`, has no central server, and installs no Windows components.
+Pageway RDP aims to offer what the native Windows Remote Desktop client (mstsc) offers wherever a browser allows it, and to handle each feature the way mstsc does. The work is split into four phases; each phase is tested on real Windows hosts and released as its own minor version. The product boundary is the same in every phase: Pageway RDP connects only to the PC's own Remote Desktop service, has no central server, and installs no Windows components.
 
-Items marked **HTTPS** need a secure page (a trusted certificate or localhost). Browsers disable the APIs they rely on in limited mode.
+Items marked **HTTPS** need an HTTPS page. Browsers disable the APIs they rely on in limited mode.
 
 ### Phase 1 — Foundation (done in 1.0.0)
 
