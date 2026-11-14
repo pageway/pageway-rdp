@@ -90,7 +90,7 @@ pub fn load_or_create(config_dir: &Path) -> Result<WebTls> {
             &metadata_path,
             serde_json::to_vec(&CertificateMetadata { sans, expires })?,
         )?;
-        tracing::info!(%host, "Generated a new Pageway HTTPS certificate");
+        tracing::info!(%host, "Generated a new Pageway RDP HTTPS certificate");
     }
 
     let certs = load_certs(&cert_path)?;
@@ -161,7 +161,7 @@ fn is_allowed_ip(ip: IpAddr) -> bool {
 fn create_ca(host: &str) -> Result<(String, String)> {
     let mut params = CertificateParams::new(Vec::<String>::new())?;
     params.is_ca = IsCa::Ca(BasicConstraints::Constrained(0));
-    params.distinguished_name = distinguished_name(&format!("Pageway {host} Local CA"));
+    params.distinguished_name = distinguished_name(&format!("Pageway RDP {host} Local CA"));
     params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
     params.not_before = OffsetDateTime::now_utc() - time::Duration::days(1);
     params.not_after = OffsetDateTime::now_utc() + time::Duration::days(3650);
@@ -207,7 +207,7 @@ fn create_server_certificate(
     ca_key: &KeyPair,
 ) -> Result<(String, String, i64)> {
     let mut params = CertificateParams::new(sans.to_vec())?;
-    params.distinguished_name = distinguished_name(&format!("Pageway {host}"));
+    params.distinguished_name = distinguished_name(&format!("Pageway RDP {host}"));
     params.use_authority_key_identifier_extension = true;
     params.key_usages = vec![
         KeyUsagePurpose::DigitalSignature,
@@ -260,17 +260,17 @@ impl TrustInfo {
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>PayloadContent</key><array><dict>
-<key>PayloadCertificateFileName</key><string>Pageway-{host}.cer</string>
+<key>PayloadCertificateFileName</key><string>Pageway-RDP-{host}.cer</string>
 <key>PayloadContent</key><data>{}</data>
-<key>PayloadDescription</key><string>Pageway local CA</string>
-<key>PayloadDisplayName</key><string>Pageway {host}</string>
-<key>PayloadIdentifier</key><string>local.pageway.{uuid}.certificate</string>
+<key>PayloadDescription</key><string>Pageway RDP local CA</string>
+<key>PayloadDisplayName</key><string>Pageway RDP {host}</string>
+<key>PayloadIdentifier</key><string>local.pageway.rdp.{uuid}.certificate</string>
 <key>PayloadType</key><string>com.apple.security.root</string>
 <key>PayloadUUID</key><string>{uuid}</string>
 <key>PayloadVersion</key><integer>1</integer>
 </dict></array>
-<key>PayloadDisplayName</key><string>Pageway {host}</string>
-<key>PayloadIdentifier</key><string>local.pageway.{uuid}</string>
+<key>PayloadDisplayName</key><string>Pageway RDP {host}</string>
+<key>PayloadIdentifier</key><string>local.pageway.rdp.{uuid}</string>
 <key>PayloadRemovalDisallowed</key><false/>
 <key>PayloadType</key><string>Configuration</string>
 <key>PayloadUUID</key><string>{uuid}</string>
@@ -283,7 +283,7 @@ impl TrustInfo {
     pub fn windows_command(&self) -> String {
         let encoded = BASE64.encode(self.ca_pem.as_bytes());
         format!(
-            "@echo off\r\nsetlocal\r\nset \"B64=%TEMP%\\pageway-ca-base64.txt\"\r\nset \"CERT=%TEMP%\\pageway-ca.cer\"\r\n> \"%B64%\" echo {encoded}\r\ncertutil.exe -decode \"%B64%\" \"%CERT%\"\r\nif errorlevel 1 goto failed\r\ncertutil.exe -user -addstore Root \"%CERT%\"\r\nif errorlevel 1 goto failed\r\ndel \"%B64%\" \"%CERT%\"\r\necho.\r\necho Pageway certificate installed. Return to the Pageway tab.\r\npause\r\nexit /b 0\r\n:failed\r\necho Certificate import failed. Download the CER file and use Windows certificate import instead.\r\npause\r\nexit /b 1\r\n"
+            "@echo off\r\nsetlocal\r\nset \"B64=%TEMP%\\pageway-rdp-ca-base64.txt\"\r\nset \"CERT=%TEMP%\\pageway-rdp-ca.cer\"\r\n> \"%B64%\" echo {encoded}\r\ncertutil.exe -decode \"%B64%\" \"%CERT%\"\r\nif errorlevel 1 goto failed\r\ncertutil.exe -user -addstore Root \"%CERT%\"\r\nif errorlevel 1 goto failed\r\ndel \"%B64%\" \"%CERT%\"\r\necho.\r\necho Pageway RDP certificate installed. Return to the Pageway RDP tab.\r\npause\r\nexit /b 0\r\n:failed\r\necho Certificate import failed. Download the CER file and use Windows certificate import instead.\r\npause\r\nexit /b 1\r\n"
         )
     }
 }

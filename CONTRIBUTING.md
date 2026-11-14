@@ -1,11 +1,11 @@
-# Contributing to Pageway
+# Contributing to Pageway RDP
 
 This document contains maintainer and developer instructions. For installation and day-to-day use, see [README.md](README.md) or [README.zh-CN.md](README.zh-CN.md).
 
 ## Repository layout
 
 ```text
-frontend/             Pageway web interface and first-trust page
+frontend/             Pageway RDP web interface and first-trust page
 gateway/              Rust HTTP/HTTPS/WebSocket gateway and tests
 IronRDP/              Pageway's IronRDP fork, pinned as a Git submodule
 packaging/            Build scripts and NSIS installer
@@ -111,8 +111,8 @@ The [`release`](.github/workflows/release.yml) workflow supports manual runs and
 2. Open **Actions → release → Run workflow** and run it from the intended branch.
 3. Wait for `notes` and `installers` to succeed. `installers` builds the web frontend once, then both architectures, and fails unless exactly the two expected installers exist.
 4. Download the two installers from the workflow run's **Artifacts** section. Each artifact is a single uncompressed `.exe`:
-   - `Pageway-Setup-x.y.z-windows-x64.exe`
-   - `Pageway-Setup-x.y.z-windows-arm64.exe`
+   - `Pageway-RDP-Setup-x.y.z-windows-x64.exe`
+   - `Pageway-RDP-Setup-x.y.z-windows-arm64.exe`
 5. Install and test the downloaded packages.
 6. Open the `notes` job summary on the run page to preview the description the tag run will put on the GitHub Release page.
 

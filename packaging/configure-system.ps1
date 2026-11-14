@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Stop-Pageway {
-    Get-CimInstance Win32_Process -Filter "Name = 'pageway-gateway.exe'" |
+    Get-CimInstance Win32_Process -Filter "Name = 'pageway-rdp.exe'" |
         Where-Object { $_.ExecutablePath -ieq $GatewayPath } |
         ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 }
@@ -33,7 +33,7 @@ if ($ConfigPath) {
 }
 
 if ($Remove) {
-    Remove-NetFirewallRule -Name 'Pageway-Web' -ErrorAction SilentlyContinue
+    Remove-NetFirewallRule -Name 'PagewayRDP-Web' -ErrorAction SilentlyContinue
     exit 0
 }
 
@@ -43,6 +43,6 @@ Start-Service -Name 'TermService'
 Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP', 'RemoteDesktop-UserMode-In-UDP' -ErrorAction SilentlyContinue |
     Enable-NetFirewallRule
 
-Remove-NetFirewallRule -Name 'Pageway-Web' -ErrorAction SilentlyContinue
-New-NetFirewallRule -Name 'Pageway-Web' -DisplayName 'Pageway Web' -Direction Inbound -Action Allow `
+Remove-NetFirewallRule -Name 'PagewayRDP-Web' -ErrorAction SilentlyContinue
+New-NetFirewallRule -Name 'PagewayRDP-Web' -DisplayName 'Pageway RDP' -Direction Inbound -Action Allow `
     -Program $GatewayPath -Protocol TCP -Profile Any | Out-Null

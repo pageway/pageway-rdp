@@ -97,7 +97,8 @@ function New-InstallerBitmap {
         [string]$Source,
         [string]$Destination,
         [int]$Width,
-        [int]$Height
+        [int]$Height,
+        [string]$Tag
     )
     Add-Type -AssemblyName System.Drawing
     $image = [Drawing.Image]::FromFile($Source)
@@ -113,7 +114,44 @@ function New-InstallerBitmap {
                 $drawHeight = [int]($image.Height * $scale)
                 $x = [int](($Width - $drawWidth) / 2)
                 $y = [int](($Height - $drawHeight) / 2)
+                if ($Tag) {
+                    $y -= 10
+                }
                 $graphics.DrawImage($image, $x, $y, $drawWidth, $drawHeight)
+                if ($Tag) {
+                    # The logo artwork leaves its bottom ~15% blank under the wordmark.
+                    $graphics.SmoothingMode = [Drawing.Drawing2D.SmoothingMode]::AntiAlias
+                    $graphics.TextRenderingHint = [Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+                    $ink = [Drawing.Color]::FromArgb(20, 20, 20)
+                    $font = [Drawing.Font]::new('Segoe UI Semibold', 9, [Drawing.FontStyle]::Regular, [Drawing.GraphicsUnit]::Pixel)
+                    $pen = [Drawing.Pen]::new($ink, 1.2)
+                    $brush = [Drawing.SolidBrush]::new($ink)
+                    $format = [Drawing.StringFormat]::new()
+                    try {
+                        $format.Alignment = [Drawing.StringAlignment]::Center
+                        $format.LineAlignment = [Drawing.StringAlignment]::Center
+                        $text = ($Tag.ToCharArray() -join [char]0x200A)
+                        $tagWidth = [Math]::Ceiling($graphics.MeasureString($text, $font).Width) + 8
+                        $tagHeight = 14
+                        $tagX = ($Width - $tagWidth) / 2
+                        $tagY = $y + [int]($drawHeight * 0.88)
+                        $radius = 4
+                        $path = [Drawing.Drawing2D.GraphicsPath]::new()
+                        $path.AddArc($tagX, $tagY, $radius * 2, $radius * 2, 180, 90)
+                        $path.AddArc($tagX + $tagWidth - $radius * 2, $tagY, $radius * 2, $radius * 2, 270, 90)
+                        $path.AddArc($tagX + $tagWidth - $radius * 2, $tagY + $tagHeight - $radius * 2, $radius * 2, $radius * 2, 0, 90)
+                        $path.AddArc($tagX, $tagY + $tagHeight - $radius * 2, $radius * 2, $radius * 2, 90, 90)
+                        $path.CloseFigure()
+                        $graphics.DrawPath($pen, $path)
+                        $path.Dispose()
+                        $graphics.DrawString($text, $font, $brush, [Drawing.RectangleF]::new($tagX, $tagY + 0.5, $tagWidth, $tagHeight), $format)
+                    } finally {
+                        $format.Dispose()
+                        $brush.Dispose()
+                        $pen.Dispose()
+                        $font.Dispose()
+                    }
+                }
             } finally {
                 $graphics.Dispose()
             }
@@ -160,14 +198,14 @@ try {
 
 $buildAssets = Join-Path $Root 'build\nsis-assets'
 New-Item -ItemType Directory -Path $buildAssets -Force | Out-Null
-New-InstallerBitmap -Source (Join-Path $Root 'assets\pageway-logo.png') -Destination (Join-Path $buildAssets 'welcome.bmp') -Width 164 -Height 314
+New-InstallerBitmap -Source (Join-Path $Root 'assets\pageway-logo.png') -Destination (Join-Path $buildAssets 'welcome.bmp') -Width 164 -Height 314 -Tag 'RDP'
 New-InstallerBitmap -Source (Join-Path $Root 'assets\pageway-app.png') -Destination (Join-Path $buildAssets 'header.bmp') -Width 150 -Height 57
 
 $dist = Join-Path $Root 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
 $gatewayExe = Join-Path $Root "gateway\target\$target\release\pageway-rdp.exe"
 $makeNsis = Find-MakeNsis
-$output = Join-Path $dist "Pageway-Setup-$Version-windows-$Arch.exe"
+$output = Join-Path $dist "Pageway-RDP-Setup-$Version-windows-$Arch.exe"
 $arguments = @(
     '/INPUTCHARSET', 'UTF8',
     "/DVERSION=$Version",

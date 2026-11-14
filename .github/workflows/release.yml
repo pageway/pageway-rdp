@@ -47,7 +47,7 @@ jobs:
           packaging/build.ps1 -SkipFrontend -Arch x64
           packaging/build.ps1 -SkipFrontend -Arch arm64
           $version = (Get-Content -Raw VERSION).Trim()
-          $expected = @('x64', 'arm64') | ForEach-Object { "Pageway-Setup-$version-windows-$_.exe" }
+          $expected = @('x64', 'arm64') | ForEach-Object { "Pageway-RDP-Setup-$version-windows-$_.exe" }
           $actual = @(Get-ChildItem dist -Filter '*.exe' | ForEach-Object Name)
           if (Compare-Object $expected $actual) {
             Write-Error "Unexpected installers: $($actual -join ', ')"
@@ -56,11 +56,11 @@ jobs:
       # archive: false uploads one file per step and uses the file name as the artifact name.
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-x64.exe
+          path: dist/Pageway-RDP-Setup-${{ env.VERSION }}-windows-x64.exe
           archive: false
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/Pageway-Setup-${{ env.VERSION }}-windows-arm64.exe
+          path: dist/Pageway-RDP-Setup-${{ env.VERSION }}-windows-arm64.exe
           archive: false
 
   release:
@@ -71,13 +71,13 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
-          pattern: Pageway-Setup-*
+          pattern: Pageway-RDP-Setup-*
           path: dist
           merge-multiple: true
       - run: |
           ls -l dist
-          test "$(find dist -maxdepth 1 -type f -name 'Pageway-Setup-*.exe' | wc -l)" -eq 2
+          test "$(find dist -maxdepth 1 -type f -name 'Pageway-RDP-Setup-*.exe' | wc -l)" -eq 2
           pwsh packaging/release_notes.ps1 release-notes.md > /dev/null
-      - run: gh release create "$GITHUB_REF_NAME" dist/Pageway-Setup-*.exe --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+      - run: gh release create "$GITHUB_REF_NAME" dist/Pageway-RDP-Setup-*.exe --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}

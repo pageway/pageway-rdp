@@ -1,4 +1,4 @@
-# Pageway
+# Pageway RDP
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -10,7 +10,7 @@ Self-hosted remote desktop for a Windows PC, delivered through its own web page.
 [![Release workflow](https://github.com/pageway/pageway-rdp/actions/workflows/release.yml/badge.svg)](https://github.com/pageway/pageway-rdp/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-<img src="docs/images/login.png" alt="Pageway Windows sign-in page" width="480">
+<img src="docs/images/login.png" alt="Pageway RDP Windows sign-in page" width="480">
 
 ## Features
 
@@ -23,7 +23,7 @@ Self-hosted remote desktop for a Windows PC, delivered through its own web page.
 
 ## Requirements
 
-Pageway supports Windows 10/11 Pro, Enterprise, and Education, and Windows Server 2016 or later. Windows Home does not include an RDP server and cannot be the controlled PC.
+Pageway RDP supports Windows 10/11 Pro, Enterprise, and Education, and Windows Server 2016 or later. Windows Home does not include an RDP server and cannot be the controlled PC.
 
 The installer checks for the native Windows RDP host components; it does not install or replace Windows components. The controlled PC needs no Rust, Node.js, Python, or additional runtime.
 
@@ -35,12 +35,12 @@ Download the appropriate installer from [Releases](https://github.com/pageway/pa
 
 | Architecture | File |
 | --- | --- |
-| x64 (AMD64) | `Pageway-Setup-1.0.0-windows-x64.exe` |
-| ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
+| x64 (AMD64) | `Pageway-RDP-Setup-1.0.0-windows-x64.exe` |
+| ARM64 | `Pageway-RDP-Setup-1.0.0-windows-arm64.exe` |
 
-The bilingual installer requires administrator approval and defaults to port `7172`. It enables Remote Desktop, adds a firewall exception for Pageway, and starts Pageway after Windows sign-in.
+The bilingual installer requires administrator approval and defaults to port `7172`. It enables Remote Desktop, adds a firewall exception for Pageway RDP, and starts Pageway RDP after Windows sign-in.
 
-Open **Pageway** from the Start menu, or visit:
+Open **Pageway RDP** from the Start menu, or visit:
 
 ```text
 http://127.0.0.1:7172/
@@ -50,21 +50,21 @@ http://127.0.0.1:7172/
 
 Sign in with the Windows username and password of the controlled PC. From another device, replace `127.0.0.1` with the PC's LAN or private-overlay-network address.
 
-Pageway remembers the last username and display preferences. It does not store the Windows password; password storage is left to the browser's password manager.
+Pageway RDP remembers the last username and display preferences. It does not store the Windows password; password storage is left to the browser's password manager.
 
 ### First connection and certificate trust
 
-When another device first connects over HTTP, Pageway asks how to trust the PC's local certificate.
+When another device first connects over HTTP, Pageway RDP asks how to trust the PC's local certificate.
 
-<img src="docs/images/first-trust.png" alt="Pageway certificate identity confirmation" width="720">
+<img src="docs/images/first-trust.png" alt="Pageway RDP certificate identity confirmation" width="720">
 
 - **Trust permanently and connect**: download the platform-specific trust file and follow the on-screen steps. On Windows, the same local root certificate works with Chrome, Edge, and Firefox 120 or later.
 - **Continue this time only**: continue through the browser's certificate warning with **Advanced → Proceed**. Chrome and Edge normally ask again after about seven days.
 - **Limited mode**: stay on HTTP without trusting the certificate. Clipboard transfer uses the manual text panel, and fullscreen system-key capture is unavailable.
 
-Both trust options use HTTPS and WSS for the remote session. The local CA is restricted to the PC name and private-network addresses. Pageway replaces the website certificate when local IP addresses change, without requiring the root certificate to be imported again.
+Both trust options use HTTPS and WSS for the remote session. The local CA is restricted to the PC name and private-network addresses. Pageway RDP replaces the website certificate when local IP addresses change, without requiring the root certificate to be imported again.
 
-> **Security:** do not expose the Pageway port directly to the public internet. Use a trusted LAN or a private overlay network.
+> **Security:** do not expose the Pageway RDP port directly to the public internet. Use a trusted LAN or a private overlay network.
 
 ### During a session
 
@@ -78,9 +78,9 @@ Audio, printing, file transfer, microphone, and camera are not available yet; se
 
 ## Settings and uninstall
 
-Run the installer again to change the web port. The RDP destination is fixed to `127.0.0.1:3389`; Pageway is not an intermediate RDP proxy.
+Run the installer again to change the web port. The RDP destination is fixed to `127.0.0.1:3389`; Pageway RDP is not an intermediate RDP proxy.
 
-Configuration, logs, and local certificates are stored in `%LOCALAPPDATA%\Pageway`:
+Configuration, logs, and local certificates are stored in `%LOCALAPPDATA%\Pageway RDP`:
 
 ```text
 config.json
@@ -88,17 +88,17 @@ gateway.log
 tls\
 ```
 
-Uninstall Pageway from Windows **Installed apps**. The uninstaller can ask whether to keep configuration and logs. Silent uninstall removes them:
+Uninstall Pageway RDP from Windows **Installed apps**. The uninstaller can ask whether to keep configuration and logs. Silent uninstall removes them:
 
 ```powershell
-& "$env:ProgramFiles\Pageway\uninstall.exe" /S
+& "$env:ProgramFiles\Pageway RDP\uninstall.exe" /S
 ```
 
 Uninstalling does not disable Windows Remote Desktop, because it may have been enabled before installation or used by other software.
 
 ## Roadmap
 
-Pageway aims to offer what the native Windows Remote Desktop client (mstsc) offers wherever a browser allows it, and to handle each feature the way mstsc does. The work is split into four phases; each phase is tested on real Windows hosts and released as its own minor version. The product boundary is the same in every phase: Pageway connects only to the PC's own RDP service at `127.0.0.1:3389`, has no central server, and installs no Windows components.
+Pageway RDP aims to offer what the native Windows Remote Desktop client (mstsc) offers wherever a browser allows it, and to handle each feature the way mstsc does. The work is split into four phases; each phase is tested on real Windows hosts and released as its own minor version. The product boundary is the same in every phase: Pageway RDP connects only to the PC's own RDP service at `127.0.0.1:3389`, has no central server, and installs no Windows components.
 
 Items marked **HTTPS** need a secure page (a trusted certificate or localhost). Browsers disable the APIs they rely on in limited mode.
 
@@ -147,12 +147,12 @@ These depend on newer or browser-specific APIs.
 ### Not planned
 
 - Smart cards, serial and parallel ports, USB, and other Plug and Play devices: browsers do not provide the device access these require. WebUSB covers only a few devices and remains a research item.
-- RD Gateway, server redirection, and UDP transport: outside Pageway's product boundary, or unavailable in browsers.
+- RD Gateway, server redirection, and UDP transport: outside Pageway RDP's product boundary, or unavailable in browsers.
 
 ## Architecture
 
 ```text
-Browser (IronRDP WASM) ── WebSocket / RDCleanPath ──> Pageway gateway ── TLS ──> Local RDP service (3389)
+Browser (IronRDP WASM) ── WebSocket / RDCleanPath ──> Pageway RDP gateway ── TLS ──> Local RDP service (3389)
 ```
 
 The browser performs CredSSP/NLA, desktop decoding, and rendering. The Rust gateway handles protocol ingress, TLS termination, and bidirectional byte relay.
@@ -163,6 +163,6 @@ Build instructions, repository layout, checks, and the release process are in [C
 
 ## License
 
-Pageway is available under the [MIT License](LICENSE).
+Pageway RDP is available under the [MIT License](LICENSE).
 
-Thanks to [Devolutions IronRDP](https://github.com/Devolutions/IronRDP) for the RDP protocol stack and web client. Pageway's IronRDP changes are maintained in the fork referenced by the `IronRDP` submodule.
+Thanks to [Devolutions IronRDP](https://github.com/Devolutions/IronRDP) for the RDP protocol stack and web client. Pageway RDP's IronRDP changes are maintained in the fork referenced by the `IronRDP` submodule.

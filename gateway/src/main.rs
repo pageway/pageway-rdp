@@ -129,7 +129,7 @@ fn default_config_dir() -> PathBuf {
     std::env::var_os("LOCALAPPDATA")
         .map(PathBuf::from)
         .unwrap_or_else(std::env::temp_dir)
-        .join("Pageway")
+        .join("Pageway RDP")
 }
 
 fn default_static_dir() -> PathBuf {
@@ -146,7 +146,7 @@ async fn main() -> Result<()> {
     init_logging(options.log.as_deref())?;
 
     let listen = options.listen;
-    tracing::info!(%listen, destination = %options.destination, "Pageway starting");
+    tracing::info!(%listen, destination = %options.destination, "Pageway RDP starting");
     let web_tls = web_tls::load_or_create(&options.config_dir)?;
     let listener = tokio::net::TcpListener::bind(listen).await?;
     tracing::info!(fingerprint = %web_tls.trust.fingerprint, "HTTPS ready");
@@ -274,7 +274,7 @@ async fn ca_pem_handler(State(state): State<AppState>) -> Response {
     download_response(
         state.trust.ca_pem.clone().into_bytes(),
         "application/x-x509-ca-cert",
-        &format!("pageway-{}.cer", state.trust.host),
+        &format!("Pageway-RDP-{}.cer", state.trust.host),
     )
 }
 
@@ -282,7 +282,7 @@ async fn ca_command_handler(State(state): State<AppState>) -> Response {
     download_response(
         state.trust.windows_command().into_bytes(),
         "application/octet-stream",
-        &format!("Pageway-Trust-{}.cmd", state.trust.host),
+        &format!("Pageway-RDP-Trust-{}.cmd", state.trust.host),
     )
 }
 
@@ -290,7 +290,7 @@ async fn ca_profile_handler(State(state): State<AppState>) -> Response {
     download_response(
         state.trust.mobileconfig().into_bytes(),
         "application/x-apple-aspen-config",
-        &format!("Pageway-{}.mobileconfig", state.trust.host),
+        &format!("Pageway-RDP-{}.mobileconfig", state.trust.host),
     )
 }
 

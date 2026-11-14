@@ -30,23 +30,23 @@ ManifestDPIAware true
   !error "BUILD_ASSETS is required"
 !endif
 
-!define PRODUCT_NAME "Pageway"
+!define PRODUCT_NAME "Pageway RDP"
 !define PRODUCT_PUBLISHER "Pageway"
-!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Pageway"
-!define SETTINGS_KEY "Software\Pageway"
+!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define SETTINGS_KEY "Software\${PRODUCT_NAME}"
 
 Name "${PRODUCT_NAME}"
 OutFile "${OUTPUT_FILE}"
 Icon "${ROOT_DIR}\assets\pageway-app.ico"
 UninstallIcon "${ROOT_DIR}\assets\pageway-app.ico"
-InstallDir "$PROGRAMFILES64\Pageway"
+InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 RequestExecutionLevel admin
 BrandingText "${PRODUCT_NAME} ${VERSION}"
 VIProductVersion "${VERSION}.0"
 VIFileVersion "${VERSION}.0"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
-VIAddVersionKey "FileDescription" "Pageway installer"
+VIAddVersionKey "FileDescription" "${PRODUCT_NAME} installer"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "LegalCopyright" "MIT"
 VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
@@ -58,7 +58,7 @@ VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "${BUILD_ASSETS}\header.bmp"
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_FINISHPAGE_RUN "$INSTDIR\pageway-gateway.exe"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\pageway-rdp.exe"
 !define MUI_FINISHPAGE_RUN_FUNCTION OpenLogin
 !define MUI_FINISHPAGE_RUN_TEXT "$(FinishRun)"
 !define MUI_WELCOMEPAGE_TEXT "$(WelcomeText)"
@@ -76,32 +76,32 @@ Page custom ConfigCreate ConfigLeave
 !insertmacro MUI_LANGUAGE "SimpChinese"
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
-LangString WelcomeText ${LANG_ENGLISH} "Setup will install Pageway on this computer.$\r$\n$\r$\nPageway connects your browser to the existing Windows Remote Desktop on this PC.$\r$\n$\r$\nClick Next to continue."
-LangString WelcomeText ${LANG_SIMPCHINESE} "将在计算机上安装 Pageway。$\r$\n$\r$\nPageway 通过浏览器连接本机已有的 Windows 远程桌面。$\r$\n$\r$\n单击“下一步”继续。"
-LangString DirectoryText ${LANG_ENGLISH} "Choose where to install Pageway, then click Next."
-LangString DirectoryText ${LANG_SIMPCHINESE} "选择 Pageway 的安装文件夹，然后单击“下一步”。"
+LangString WelcomeText ${LANG_ENGLISH} "Setup will install Pageway RDP on this computer.$\r$\n$\r$\nPageway RDP connects your browser to the existing Windows Remote Desktop on this PC.$\r$\n$\r$\nClick Next to continue."
+LangString WelcomeText ${LANG_SIMPCHINESE} "将在计算机上安装 Pageway RDP。$\r$\n$\r$\nPageway RDP 通过浏览器连接本机已有的 Windows 远程桌面。$\r$\n$\r$\n单击“下一步”继续。"
+LangString DirectoryText ${LANG_ENGLISH} "Choose where to install Pageway RDP, then click Next."
+LangString DirectoryText ${LANG_SIMPCHINESE} "选择 Pageway RDP 的安装文件夹，然后单击“下一步”。"
 LangString ConfigTitle ${LANG_ENGLISH} "Connection settings"
 LangString ConfigTitle ${LANG_SIMPCHINESE} "连接设置"
 LangString ConfigSubtitle ${LANG_ENGLISH} "Only the web port needs to be configured."
 LangString ConfigSubtitle ${LANG_SIMPCHINESE} "只需设置网页端口。"
 LangString PortLabel ${LANG_ENGLISH} "Web port (default: 7172)"
 LangString PortLabel ${LANG_SIMPCHINESE} "网页端口（默认：7172）"
-LangString PreparationHint ${LANG_ENGLISH} "Setup enables Windows Remote Desktop, allows Pageway through Windows Firewall, and starts Pageway when you sign in."
-LangString PreparationHint ${LANG_SIMPCHINESE} "安装将启用本机远程桌面、允许 Pageway 通过防火墙，并在登录 Windows 后自动启动。"
+LangString PreparationHint ${LANG_ENGLISH} "Setup enables Windows Remote Desktop, allows Pageway RDP through Windows Firewall, and starts it when you sign in."
+LangString PreparationHint ${LANG_SIMPCHINESE} "安装将启用本机远程桌面、允许 Pageway RDP 通过防火墙，并在登录 Windows 后自动启动。"
 LangString InvalidPort ${LANG_ENGLISH} "Enter a port from 1 to 65535."
 LangString InvalidPort ${LANG_SIMPCHINESE} "请输入 1 到 65535 之间的端口。"
-LangString UnsupportedWindows ${LANG_ENGLISH} "Pageway requires Windows 10 or later, or Windows Server 2016 or later."
-LangString UnsupportedWindows ${LANG_SIMPCHINESE} "Pageway 需要 Windows 10 或更高版本，或 Windows Server 2016 或更高版本。"
-LangString MissingRdpHost ${LANG_ENGLISH} "This Windows edition does not include the Remote Desktop host component. Use Windows Pro, Enterprise, Education, or Server. Pageway does not install Windows components."
-LangString MissingRdpHost ${LANG_SIMPCHINESE} "当前 Windows 版本没有远程桌面宿主组件。请使用专业版、企业版、教育版或服务器版。Pageway 不会安装 Windows 组件。"
-LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed. You can still use Pageway on this PC. Check the installation log and run the installer again."
-LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成。你仍可在本机使用 Pageway，请检查安装日志后重新运行安装程序。"
-LangString TaskFailed ${LANG_ENGLISH} "Pageway could not be started automatically. Check the installation log and run the installer again."
-LangString TaskFailed ${LANG_SIMPCHINESE} "Pageway 无法自动启动。请检查安装日志，并重新运行安装程序。"
-LangString FinishRun ${LANG_ENGLISH} "Open Pageway"
-LangString FinishRun ${LANG_SIMPCHINESE} "打开 Pageway"
-LangString RemoveData ${LANG_ENGLISH} "Also delete Pageway settings and logs?"
-LangString RemoveData ${LANG_SIMPCHINESE} "是否同时删除 Pageway 的配置和日志？"
+LangString UnsupportedWindows ${LANG_ENGLISH} "Pageway RDP requires Windows 10 or later, or Windows Server 2016 or later."
+LangString UnsupportedWindows ${LANG_SIMPCHINESE} "Pageway RDP 需要 Windows 10 或更高版本，或 Windows Server 2016 或更高版本。"
+LangString MissingRdpHost ${LANG_ENGLISH} "This Windows edition does not include the Remote Desktop host component. Use Windows Pro, Enterprise, Education, or Server. Pageway RDP does not install Windows components."
+LangString MissingRdpHost ${LANG_SIMPCHINESE} "当前 Windows 版本没有远程桌面宿主组件。请使用专业版、企业版、教育版或服务器版。Pageway RDP 不会安装 Windows 组件。"
+LangString SystemConfigFailed ${LANG_ENGLISH} "Windows Remote Desktop or firewall setup was not completed. You can still use Pageway RDP on this PC. Check the installation log and run the installer again."
+LangString SystemConfigFailed ${LANG_SIMPCHINESE} "Windows 远程桌面或防火墙配置未完成。你仍可在本机使用 Pageway RDP，请检查安装日志后重新运行安装程序。"
+LangString TaskFailed ${LANG_ENGLISH} "Pageway RDP could not be started automatically. Check the installation log and run the installer again."
+LangString TaskFailed ${LANG_SIMPCHINESE} "Pageway RDP 无法自动启动。请检查安装日志，并重新运行安装程序。"
+LangString FinishRun ${LANG_ENGLISH} "Open Pageway RDP"
+LangString FinishRun ${LANG_SIMPCHINESE} "打开 Pageway RDP"
+LangString RemoveData ${LANG_ENGLISH} "Also delete Pageway RDP settings and logs?"
+LangString RemoveData ${LANG_SIMPCHINESE} "是否同时删除 Pageway RDP 的配置和日志？"
 
 Var Dialog
 Var PortInput
@@ -132,7 +132,7 @@ Function .onInit
     Abort
   rdp_host_present:
   SetShellVarContext current
-  StrCpy $ConfigDir "$LOCALAPPDATA\Pageway"
+  StrCpy $ConfigDir "$LOCALAPPDATA\${PRODUCT_NAME}"
   SetShellVarContext all
   StrCpy $Port "7172"
   ReadRegStr $0 HKLM "${SETTINGS_KEY}" "InstallLocation"
@@ -181,12 +181,12 @@ FunctionEnd
 Section "Install"
   SetRegView 64
   SetShellVarContext all
-  nsExec::ExecToLog 'schtasks.exe /End /TN "Pageway"'
+  nsExec::ExecToLog 'schtasks.exe /End /TN "${PRODUCT_NAME}"'
   IfFileExists "$INSTDIR\configure-system.ps1" 0 no_existing_install
-  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -StopGateway'
+  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -StopGateway'
   no_existing_install:
   SetOutPath $INSTDIR
-  File "/oname=pageway-gateway.exe" "${GATEWAY_EXE}"
+  File "/oname=pageway-rdp.exe" "${GATEWAY_EXE}"
   File "/oname=pageway-app.ico" "${ROOT_DIR}\assets\pageway-app.ico"
   File "/oname=configure-system.ps1" "${ROOT_DIR}\packaging\configure-system.ps1"
   SetOutPath "$INSTDIR\web"
@@ -194,7 +194,7 @@ Section "Install"
 
   CreateDirectory $ConfigDir
   SetDetailsPrint both
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -ConfigPath "$ConfigDir\config.json" -Port $Port'
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -ConfigPath "$ConfigDir\config.json" -Port $Port'
   Pop $0
   Pop $1
   DetailPrint $1
@@ -205,30 +205,29 @@ Section "Install"
   WriteRegStr HKLM "${SETTINGS_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "${SETTINGS_KEY}" "Port" "$Port"
   WriteRegDWORD HKLM "${SETTINGS_KEY}" "ConfiguredSystem" 1
-  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayName" "Pageway"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayName" "${PRODUCT_NAME}"
   WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayVersion" "${VERSION}"
   WriteRegStr HKLM "${UNINSTALL_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\pageway-gateway.exe"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\pageway-rdp.exe"
   WriteRegStr HKLM "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "${UNINSTALL_KEY}" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "${UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\uninstall.exe" /S'
   WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoModify" 1
   WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoRepair" 1
 
-  nsExec::ExecToStack 'schtasks.exe /Create /TN "Pageway" /SC ONLOGON /RL LIMITED /IT /F /TR "\"$INSTDIR\pageway-gateway.exe\" --config \"$ConfigDir\config.json\" --log \"$ConfigDir\gateway.log\""'
+  nsExec::ExecToStack 'schtasks.exe /Create /TN "${PRODUCT_NAME}" /SC ONLOGON /RL LIMITED /IT /F /TR "\"$INSTDIR\pageway-rdp.exe\" --config \"$ConfigDir\config.json\" --log \"$ConfigDir\gateway.log\""'
   Pop $0
   Pop $1
   DetailPrint $1
   ${If} $0 == 0
-    nsExec::ExecToLog 'schtasks.exe /Run /TN "Pageway"'
+    nsExec::ExecToLog 'schtasks.exe /Run /TN "${PRODUCT_NAME}"'
   ${Else}
     MessageBox MB_ICONEXCLAMATION|MB_OK "$(TaskFailed)" /SD IDOK
   ${EndIf}
 
-  CreateDirectory "$SMPROGRAMS\Pageway"
-  WriteINIStr "$SMPROGRAMS\Pageway\Pageway.url" "InternetShortcut" "URL" "http://127.0.0.1:$Port/"
-  WriteINIStr "$SMPROGRAMS\Pageway\Pageway.url" "InternetShortcut" "IconFile" "$INSTDIR\pageway-app.ico"
-  WriteINIStr "$SMPROGRAMS\Pageway\Pageway.url" "InternetShortcut" "IconIndex" "0"
+  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "http://127.0.0.1:$Port/"
+  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "IconFile" "$INSTDIR\pageway-app.ico"
+  WriteINIStr "$SMPROGRAMS\${PRODUCT_NAME}.url" "InternetShortcut" "IconIndex" "0"
   WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
@@ -236,7 +235,7 @@ Function un.onInit
   !insertmacro MUI_UNGETLANGUAGE
   SetRegView 64
   SetShellVarContext current
-  StrCpy $ConfigDir "$LOCALAPPDATA\Pageway"
+  StrCpy $ConfigDir "$LOCALAPPDATA\${PRODUCT_NAME}"
   SetShellVarContext all
 FunctionEnd
 
@@ -249,15 +248,15 @@ Section "Uninstall"
     StrCpy $RemoveData 0
   ${EndIf}
 
-  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -StopGateway'
-  nsExec::ExecToLog 'schtasks.exe /End /TN "Pageway"'
-  nsExec::ExecToLog 'schtasks.exe /Delete /TN "Pageway" /F'
+  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -StopGateway'
+  nsExec::ExecToLog 'schtasks.exe /End /TN "${PRODUCT_NAME}"'
+  nsExec::ExecToLog 'schtasks.exe /Delete /TN "${PRODUCT_NAME}" /F'
   ReadRegDWORD $0 HKLM "${SETTINGS_KEY}" "ConfiguredSystem"
   ${If} $0 == 1
-    nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-gateway.exe" -Remove'
+    nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -Remove'
   ${EndIf}
 
-  RMDir /r "$SMPROGRAMS\Pageway"
+  Delete "$SMPROGRAMS\${PRODUCT_NAME}.url"
   DeleteRegKey HKLM "${UNINSTALL_KEY}"
   DeleteRegKey HKLM "${SETTINGS_KEY}"
   ${If} $RemoveData == 1

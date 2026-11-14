@@ -1,4 +1,4 @@
-# Pageway
+# Pageway RDP
 
 [English](README.md) | **简体中文**
 
@@ -10,7 +10,7 @@
 [![Release workflow](https://github.com/pageway/pageway-rdp/actions/workflows/release.yml/badge.svg)](https://github.com/pageway/pageway-rdp/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-<img src="docs/images/login.zh-CN.png" alt="Pageway Windows 登录页" width="480">
+<img src="docs/images/login.zh-CN.png" alt="Pageway RDP Windows 登录页" width="480">
 
 ## 功能
 
@@ -23,7 +23,7 @@
 
 ## 环境要求
 
-Pageway 支持 Windows 10/11 专业版、企业版、教育版，以及 Windows Server 2016 或更高版本。Windows 家庭版不提供远程桌面服务端，无法作为被控机。
+Pageway RDP 支持 Windows 10/11 专业版、企业版、教育版，以及 Windows Server 2016 或更高版本。Windows 家庭版不提供远程桌面服务端，无法作为被控机。
 
 安装器会检查原生 RDP 宿主组件，但不会安装或替换 Windows 组件。被控机运行时不需要 Rust、Node.js、Python 或额外运行库。
 
@@ -35,12 +35,12 @@ Pageway 支持 Windows 10/11 专业版、企业版、教育版，以及 Windows 
 
 | 处理器架构 | 文件 |
 | --- | --- |
-| x64（AMD64） | `Pageway-Setup-1.0.0-windows-x64.exe` |
-| ARM64 | `Pageway-Setup-1.0.0-windows-arm64.exe` |
+| x64（AMD64） | `Pageway-RDP-Setup-1.0.0-windows-x64.exe` |
+| ARM64 | `Pageway-RDP-Setup-1.0.0-windows-arm64.exe` |
 
-双语安装器需要管理员授权，默认使用端口 `7172`。安装器会启用本机远程桌面、允许 Pageway 通过防火墙，并设置登录 Windows 后自动启动。
+双语安装器需要管理员授权，默认使用端口 `7172`。安装器会启用本机远程桌面、允许 Pageway RDP 通过防火墙，并设置登录 Windows 后自动启动。
 
-从开始菜单打开 **Pageway**，或直接访问：
+从开始菜单打开 **Pageway RDP**，或直接访问：
 
 ```text
 http://127.0.0.1:7172/
@@ -50,13 +50,13 @@ http://127.0.0.1:7172/
 
 输入被控电脑的 Windows 用户名和密码。其他设备把 `127.0.0.1` 换成这台电脑的局域网或私网组网地址。
 
-Pageway 会记住上次输入的用户名和显示偏好，自身不保存 Windows 密码；密码由浏览器密码管理器按需保存。
+Pageway RDP 会记住上次输入的用户名和显示偏好，自身不保存 Windows 密码；密码由浏览器密码管理器按需保存。
 
 ### 首次连接与证书信任
 
-第一次从其他设备通过 HTTP 访问时，Pageway 会要求选择如何信任被控电脑的本机证书。
+第一次从其他设备通过 HTTP 访问时，Pageway RDP 会要求选择如何信任被控电脑的本机证书。
 
-<img src="docs/images/first-trust.zh-CN.png" alt="Pageway 证书身份确认弹窗" width="720">
+<img src="docs/images/first-trust.zh-CN.png" alt="Pageway RDP 证书身份确认弹窗" width="720">
 
 - **永久信任并连接**：下载对应平台的信任文件并按页面步骤操作。Windows 上同一个本机根证书可供 Chrome、Edge 和 Firefox 120 及以上版本使用。
 - **仅本次继续**：在浏览器安全警告页选择“高级 → 继续前往”。Chrome 和 Edge 通常约 7 天后会再次询问。
@@ -64,7 +64,7 @@ Pageway 会记住上次输入的用户名和显示偏好，自身不保存 Windo
 
 两种信任方式的远程会话都使用 HTTPS 和 WSS。本机根证书仅允许本机名和私网地址。本机 IP 变化时网关会自动换发网站证书，无需重新导入根证书。
 
-> **安全提示：**不要把 Pageway 端口直接暴露到公网。请只在可信局域网或私网组网中使用。
+> **安全提示：**不要把 Pageway RDP 端口直接暴露到公网。请只在可信局域网或私网组网中使用。
 
 ### 会话操作
 
@@ -78,9 +78,9 @@ Pageway 会记住上次输入的用户名和显示偏好，自身不保存 Windo
 
 ## 设置与卸载
 
-需要修改网页端口时，重新运行安装器。RDP 目标固定为 `127.0.0.1:3389`，Pageway 不提供中间 RDP 代理模式。
+需要修改网页端口时，重新运行安装器。RDP 目标固定为 `127.0.0.1:3389`，Pageway RDP 不提供中间 RDP 代理模式。
 
-配置、日志和本机证书位于 `%LOCALAPPDATA%\Pageway`：
+配置、日志和本机证书位于 `%LOCALAPPDATA%\Pageway RDP`：
 
 ```text
 config.json
@@ -88,17 +88,17 @@ gateway.log
 tls\
 ```
 
-在 Windows“安装的应用”中卸载 Pageway。卸载时可选择是否保留配置和日志，静默卸载会同时删除它们：
+在 Windows“安装的应用”中卸载 Pageway RDP。卸载时可选择是否保留配置和日志，静默卸载会同时删除它们：
 
 ```powershell
-& "$env:ProgramFiles\Pageway\uninstall.exe" /S
+& "$env:ProgramFiles\Pageway RDP\uninstall.exe" /S
 ```
 
 卸载不会关闭 Windows 远程桌面，因为它可能在安装前已经启用或被其他用途使用。
 
 ## 后续路线
 
-Pageway 的目标是：原生远程桌面客户端（mstsc）有的功能，只要浏览器允许，Pageway 都要有，并尽量按 mstsc 的方式处理。整体分为四期，每期在真实 Windows 主机上测试后作为一个小版本单独发布。各期的产品边界不变：只连接本机自己的 RDP 服务 `127.0.0.1:3389`，不做中心服务器，不安装 Windows 组件。
+Pageway RDP 的目标是：原生远程桌面客户端（mstsc）有的功能，只要浏览器允许，Pageway RDP 都要有，并尽量按 mstsc 的方式处理。整体分为四期，每期在真实 Windows 主机上测试后作为一个小版本单独发布。各期的产品边界不变：只连接本机自己的 RDP 服务 `127.0.0.1:3389`，不做中心服务器，不安装 Windows 组件。
 
 标注 **HTTPS** 的功能需要安全页面（已信任证书或通过 localhost 访问），受限模式下浏览器会禁用相关接口。
 
@@ -147,12 +147,12 @@ Pageway 的目标是：原生远程桌面客户端（mstsc）有的功能，只�
 ### 不在计划内
 
 - 智能卡、串口和并口、USB 及其他即插即用设备：浏览器不提供这些设备所需的访问能力。WebUSB 只覆盖少数设备，仅作为研究项。
-- RD 网关、服务器重定向、UDP 传输：超出 Pageway 产品边界，或浏览器无法支持。
+- RD 网关、服务器重定向、UDP 传输：超出 Pageway RDP 产品边界，或浏览器无法支持。
 
 ## 架构
 
 ```text
-浏览器（IronRDP WASM）──WebSocket / RDCleanPath──> Pageway 网关 ──TLS──> 本机 RDP 服务（3389）
+浏览器（IronRDP WASM）──WebSocket / RDCleanPath──> Pageway RDP 网关 ──TLS──> 本机 RDP 服务（3389）
 ```
 
 浏览器完成 CredSSP/NLA、桌面解码和渲染。Rust 网关负责协议接入、TLS 终结和双向字节透传。
@@ -163,6 +163,6 @@ Pageway 的目标是：原生远程桌面客户端（mstsc）有的功能，只�
 
 ## 许可
 
-Pageway 使用 [MIT 许可证](LICENSE)。
+Pageway RDP 使用 [MIT 许可证](LICENSE)。
 
-感谢 [Devolutions IronRDP](https://github.com/Devolutions/IronRDP) 提供 RDP 协议栈和 Web 客户端。Pageway 对 IronRDP 的修改维护在 `IronRDP` 子模块所引用的 fork 中。
+感谢 [Devolutions IronRDP](https://github.com/Devolutions/IronRDP) 提供 RDP 协议栈和 Web 客户端。Pageway RDP 对 IronRDP 的修改维护在 `IronRDP` 子模块所引用的 fork 中。
