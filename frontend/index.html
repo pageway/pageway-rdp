@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="appTitle">Pageway RDP</title>
+    <link rel="icon" type="image/svg+xml" href="/pageway-icon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="login" class="login-wrap">
+      <div class="login-shell">
+        <div class="appearance">
+          <select id="language-select" data-i18n-aria="language">
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+          </select>
+          <select id="theme-select" data-i18n-aria="theme">
+            <option value="system" data-i18n="system">跟随系统</option>
+            <option value="light" data-i18n="light">浅色</option>
+            <option value="dark" data-i18n="dark">深色</option>
+          </select>
+        </div>
+        <form id="login-form" class="login-card">
+          <div class="brand">
+            <svg class="brand-icon" viewBox="0 0 200 200" aria-hidden="true">
+              <g transform="translate(0 2)">
+                <path class="brand-shape" fill-rule="evenodd" d="M48 38H152Q164 38 164 50V122Q164 134 152 134H54Q50 134 50 138V158Q50 162 46 162H40Q36 162 36 158V50Q36 38 48 38Z M56 62H144Q150 62 150 68V114Q150 120 144 120H56Q50 120 50 114V68Q50 62 56 62Z"/>
+                <g class="brand-cutout">
+                  <circle cx="62" cy="50" r="3.2"/>
+                  <circle cx="78" cy="50" r="3.2"/>
+                  <circle cx="94" cy="50" r="3.2"/>
+                </g>
+              </g>
+            </svg>
+            <span class="brand-name">pageway</span>
+          </div>
+          <p class="tagline">Everything is a page away</p>
+          <div class="windows-avatar" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <circle cx="32" cy="22" r="11" />
+              <path d="M12 56c1-13 9-20 20-20s19 7 20 20" />
+            </svg>
+          </div>
+          <div class="signin-heading">
+            <h1 data-i18n="windowsSignIn">Windows 登录</h1>
+            <p data-i18n="windowsAccountHint">使用这台电脑的 Windows 账户</p>
+          </div>
+          <label>
+            <span data-i18n="username">用户名</span>
+            <input id="username" name="username" type="text" autocomplete="username" data-i18n-placeholder="usernamePlaceholder" required />
+          </label>
+          <label>
+            <span data-i18n="password">密码</span>
+            <input id="password" name="password" type="password" autocomplete="current-password" data-i18n-placeholder="passwordPlaceholder" required />
+          </label>
+          <details class="advanced">
+            <summary data-i18n="advanced">高级</summary>
+            <div class="advanced-fields">
+              <label class="check-label">
+                <input id="dynamic-resolution" type="checkbox" checked />
+                <span data-i18n="dynamicResolution">窗口大小变化时调整远程分辨率</span>
+              </label>
+              <label>
+                <span data-i18n="scaleMode">本地缩放</span>
+                <select id="scale-mode">
+                  <option value="real" data-i18n="scaleReal">原始大小（清晰）</option>
+                  <option value="fit" data-i18n="scaleFit">适应窗口</option>
+                  <option value="full" data-i18n="scaleFull">填满窗口</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="graphicsMode">画面与流量</span>
+                <select id="graphics-mode">
+                  <option value="lossless" data-i18n="graphicsLossless">32 位无损（画质优先）</option>
+                  <option value="compressed" data-i18n="graphicsCompressed">16 位压缩（节省流量）</option>
+                </select>
+              </label>
+            </div>
+          </details>
+          <a id="security-notice" class="security-notice" href="/" hidden data-i18n="securityNotice">当前为受限模式。点此信任本机证书，启用完整剪贴板和全屏组合键。</a>
+          <button type="submit" id="connect-btn" data-i18n="connect">连接</button>
+          <p id="status" class="status" hidden></p>
+        </form>
+      </div>
+    </div>
+    <div id="screen" class="screen" hidden></div>
+    <div id="session-tools" class="session-tools" hidden>
+      <button id="pin-toggle" class="tool-button pin-button" type="button" data-i18n-aria="unpinBar" data-i18n-title="unpinBar" aria-pressed="true">
+        <svg id="pin-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2h5M6.5 2v4L4.5 9h7l-2-3V2M8 9v5" /></svg>
+      </button>
+      <span class="tool-separator" aria-hidden="true"></span>
+      <span id="connection-name" class="connection-name">
+        <svg id="secure-icon" class="secure-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" /><path d="M5 7V5a3 3 0 0 1 6 0v2" /></svg>
+        <svg id="limited-icon" class="limited-icon" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="M8 2.5 14.5 13.5h-13z" /><path d="M8 6.5v3.2M8 11.6h.01" /></svg>
+        <span id="connection-host">Pageway</span>
+      </span>
+      <span class="tool-separator" aria-hidden="true"></span>
+      <button id="ctrl-alt-del" class="tool-button" type="button" data-i18n-aria="ctrlAltDel" data-i18n-title="ctrlAltDel">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5" /><path d="M4 7h.5M7.75 7h.5M11.5 7h.5M5 10h6" /></svg>
+        <span class="tool-label" data-i18n="ctrlAltDel">Ctrl+Alt+Del</span>
+      </button>
+      <button id="windows-key" class="tool-button" type="button" data-i18n-aria="windowsKey" data-i18n-title="windowsKey">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5h4.7v4.7H2.5zM8.8 2.5h4.7v4.7H8.8zM2.5 8.8h4.7v4.7H2.5zM8.8 8.8h4.7v4.7H8.8z" /></svg>
+        <span class="tool-label" data-i18n="windowsKey">Win 键</span>
+      </button>
+      <button id="clipboard-open" class="tool-button" type="button" data-i18n-aria="textClipboard" data-i18n-title="textClipboard">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="9" height="11" rx="1.5" /><rect x="6" y="1.5" width="4" height="3" rx="1" /><path d="M6 8h4M6 10.5h4" /></svg>
+        <span class="tool-label" data-i18n="textClipboard">剪贴板</span>
+      </button>
+      <span class="tool-separator" aria-hidden="true"></span>
+      <button id="fullscreen-toggle" class="tool-button" type="button" data-i18n-aria="fullscreen" data-i18n-title="fullscreen">
+        <svg id="fullscreen-enter-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" /></svg>
+        <svg id="fullscreen-exit-icon" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="M6 2.5V6H2.5M13.5 6H10V2.5M10 13.5V10h3.5M2.5 10H6v3.5" /></svg>
+        <span id="fullscreen-label" class="tool-label" data-i18n="fullscreen">全屏</span>
+      </button>
+      <button id="disconnect" class="tool-button disconnect-button" type="button" data-i18n-aria="disconnect" data-i18n-title="disconnect">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v5.5" /><path d="M4.6 4.4a5 5 0 1 0 6.8 0" /></svg>
+        <span class="tool-label" data-i18n="disconnect">断开</span>
+      </button>
+    </div>
+    <div class="session-reveal" aria-hidden="true"></div>
+    <dialog id="clipboard-dialog" class="clipboard-dialog">
+      <h2 data-i18n="clipboardTitle">HTTP 文本剪贴板</h2>
+      <p data-i18n="clipboardHelp">在此粘贴本地文本并发送到远程，或复制远程最近发送的文本。</p>
+      <textarea id="clipboard-text" data-i18n-placeholder="clipboardPlaceholder" data-i18n-aria="clipboardPlaceholder"></textarea>
+      <p id="clipboard-status" class="clipboard-status" aria-live="polite"></p>
+      <div class="clipboard-actions">
+        <button id="clipboard-send" type="button" data-i18n="sendToRemote">发送到远程</button>
+        <button id="clipboard-receive" class="secondary-button" type="button" data-i18n="copyRemote">复制远程文本</button>
+        <button id="clipboard-close" class="secondary-button" type="button" data-i18n="close">关闭</button>
+      </div>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

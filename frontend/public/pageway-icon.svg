@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 200 200" role="img" aria-labelledby="title">
+  <title id="title">Pageway 图标</title>
+  <style>
+    .background { fill: #fff; }
+    .shape { fill: #111; }
+    .cutout { fill: #fff; }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: #242426; }
+      .shape { fill: #f2f2f3; }
+      .cutout { fill: #242426; }
+    }
+  </style>
+  <rect class="background" width="200" height="200"/>
+  <g transform="translate(0 2)">
+    <path class="shape" fill-rule="evenodd" d="M48 38H152Q164 38 164 50V122Q164 134 152 134H54Q50 134 50 138V158Q50 162 46 162H40Q36 162 36 158V50Q36 38 48 38Z M56 62H144Q150 62 150 68V114Q150 120 144 120H56Q50 120 50 114V68Q50 62 56 62Z"/>
+    <g class="cutout">
+      <circle cx="62" cy="50" r="3.2"/>
+      <circle cx="78" cy="50" r="3.2"/>
+      <circle cx="94" cy="50" r="3.2"/>
+    </g>
+  </g>
+</svg>

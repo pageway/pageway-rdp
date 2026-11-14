@@ -1,0 +1,91 @@
+name: release
+
+# Push a tag matching VERSION to publish four installers and the matching
+# CHANGELOG section. Manual runs upload the same packages as artifacts only.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - shell: powershell
+        run: |
+          $version = (Get-Content -Raw VERSION).Trim()
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            Write-Error "Tag $env:GITHUB_REF_NAME does not match VERSION $version"
+          }
+          & packaging/release_notes.ps1 release-notes.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-notes
+          path: release-notes.md
+
+  frontend:
+    needs: notes
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v0.4.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - shell: powershell
+        run: packaging/build.ps1 -FrontendOnly
+      - uses: actions/upload-artifact@v7
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  installers:
+    needs: [notes, frontend]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc, aarch64-pc-windows-msvc
+      - uses: actions/download-artifact@v8
+        with:
+          name: frontend-dist
+          path: frontend/dist
+      - run: choco install nsis -y --no-progress
+      - shell: powershell
+        run: packaging/build.ps1 -SkipFrontend -AllModes -Arch ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installers-${{ matrix.arch }}
+          path: dist/Pageway-Setup-*.exe
+          archive: false
+
+  release:
+    needs: [notes, installers]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: download
+          merge-multiple: true
+      - run: |
+          mkdir dist
+          find download -type f -name '*.exe' -exec mv -t dist {} +
+          ls -l dist
+      - run: gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file download/release-notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
