@@ -142,6 +142,19 @@ fn default_static_dir() -> PathBuf {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--print-urls") {
+        let port: u16 = args
+            .get(2)
+            .ok_or(anyhow!("--print-urls needs a port"))?
+            .parse()
+            .context("invalid port")?;
+        for ip in web_tls::access_ips() {
+            print!("http://{ip}:{port}/\r\n");
+        }
+        return Ok(());
+    }
+
     let options = parse_args()?;
     init_logging(options.log.as_deref())?;
 

@@ -111,6 +111,7 @@ Var Port
 Var ConfigDir
 Var RemoveData
 Var Addresses
+Var SystemFailed
 
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
@@ -196,23 +197,50 @@ FunctionEnd
 Section "Install"
   SetRegView 64
   SetShellVarContext all
+  StrCpy $SystemFailed 0
   nsExec::ExecToLog 'schtasks.exe /End /TN "${PRODUCT_NAME}"'
-  IfFileExists "$INSTDIR\configure-system.ps1" 0 no_existing_install
-  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -StopGateway'
-  no_existing_install:
+  nsExec::ExecToLog 'taskkill.exe /F /IM pageway-rdp.exe'
   SetOutPath $INSTDIR
+  Delete "$INSTDIR\configure-system.ps1"
   File "/oname=pageway-rdp.exe" "${GATEWAY_EXE}"
-  File "/oname=configure-system.ps1" "${ROOT_DIR}\packaging\configure-system.ps1"
   SetOutPath "$INSTDIR\web"
   File /r "${WEB_DIR}\*.*"
 
-  CreateDirectory $ConfigDir
   SetDetailsPrint both
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -ConfigPath "$ConfigDir\config.json" -Port $Port'
+  CreateDirectory $ConfigDir
+  ClearErrors
+  FileOpen $0 "$ConfigDir\config.json" w
+  ${If} ${Errors}
+    StrCpy $SystemFailed 1
+  ${Else}
+    FileWrite $0 '{$\r$\n  "listen": "0.0.0.0:$Port",$\r$\n  "destination": "127.0.0.1:3389"$\r$\n}$\r$\n'
+    FileClose $0
+  ${EndIf}
+
+  ClearErrors
+  WriteRegDWORD HKLM "SYSTEM\CurrentControlSet\Control\Terminal Server" "fDenyTSConnections" 0
+  ReadRegDWORD $0 HKLM "SYSTEM\CurrentControlSet\Services\TermService" "Start"
+  ${If} $0 == 4
+    WriteRegDWORD HKLM "SYSTEM\CurrentControlSet\Services\TermService" "Start" 3
+  ${EndIf}
+  ${If} ${Errors}
+    StrCpy $SystemFailed 1
+  ${EndIf}
+  nsExec::ExecToLog 'sc.exe start TermService'
   Pop $0
-  Pop $1
-  DetailPrint $1
   ${If} $0 != 0
+  ${AndIf} $0 != 1056
+    StrCpy $SystemFailed 1
+  ${EndIf}
+
+  nsExec::ExecToLog 'netsh.exe advfirewall firewall delete rule name="${PRODUCT_NAME}"'
+  nsExec::ExecToLog 'netsh.exe advfirewall firewall add rule name="${PRODUCT_NAME}" dir=in action=allow program="$INSTDIR\pageway-rdp.exe" protocol=TCP profile=any enable=yes'
+  Pop $0
+  ${If} $0 != 0
+    StrCpy $SystemFailed 1
+  ${EndIf}
+
+  ${If} $SystemFailed != 0
     MessageBox MB_ICONEXCLAMATION|MB_OK "$(SystemConfigFailed)" /SD IDOK
   ${EndIf}
 
@@ -239,9 +267,12 @@ Section "Install"
     MessageBox MB_ICONEXCLAMATION|MB_OK "$(TaskFailed)" /SD IDOK
   ${EndIf}
 
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -Port $Port -ListAddresses'
+  nsExec::ExecToStack '"$INSTDIR\pageway-rdp.exe" --print-urls $Port'
   Pop $0
   Pop $Addresses
+  ${If} $0 != 0
+    StrCpy $Addresses ""
+  ${EndIf}
   WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
@@ -262,12 +293,12 @@ Section "Uninstall"
     StrCpy $RemoveData 0
   ${EndIf}
 
-  nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -StopGateway'
   nsExec::ExecToLog 'schtasks.exe /End /TN "${PRODUCT_NAME}"'
+  nsExec::ExecToLog 'taskkill.exe /F /IM pageway-rdp.exe'
   nsExec::ExecToLog 'schtasks.exe /Delete /TN "${PRODUCT_NAME}" /F'
   ReadRegDWORD $0 HKLM "${SETTINGS_KEY}" "ConfiguredSystem"
   ${If} $0 == 1
-    nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\configure-system.ps1" -GatewayPath "$INSTDIR\pageway-rdp.exe" -Remove'
+    nsExec::ExecToLog 'netsh.exe advfirewall firewall delete rule name="${PRODUCT_NAME}"'
   ${EndIf}
 
   DeleteRegKey HKLM "${UNINSTALL_KEY}"

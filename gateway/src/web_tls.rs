@@ -142,6 +142,30 @@ fn subject_alt_names(host: &str) -> Vec<String> {
     names
 }
 
+pub fn access_ips() -> Vec<IpAddr> {
+    let preferred = local_ip_address::local_ip().ok();
+    let mut ips: Vec<IpAddr> = local_ip_address::list_afinet_netifas()
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(name, ip)| {
+            ip.is_ipv4()
+                && is_allowed_ip(*ip)
+                && !ip.is_loopback()
+                && !matches!(ip, IpAddr::V4(v4) if v4.is_link_local())
+                && !name.starts_with("vEthernet (WSL")
+                && name != "vEthernet (Default Switch)"
+        })
+        .map(|(_, ip)| ip)
+        .collect();
+    ips.sort_by_key(|ip| (Some(*ip) != preferred, is_cgnat(*ip), *ip));
+    ips.dedup();
+    ips
+}
+
+fn is_cgnat(ip: IpAddr) -> bool {
+    matches!(ip, IpAddr::V4(v4) if v4.octets()[0] == 100 && (64..128).contains(&v4.octets()[1]))
+}
+
 fn is_allowed_ip(ip: IpAddr) -> bool {
     match ip {
         IpAddr::V4(ip) => {
